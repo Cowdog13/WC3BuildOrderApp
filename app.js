@@ -2,9 +2,11 @@
   'use strict';
   const DATA = window.WC3_DATA;
   const BY_ID = Object.fromEntries(DATA.map(d => [d.id, d]));
+  BY_ID.dir = { id: 'dir', name: 'Directive', race: '', kind: 'directive', gold: 0, lumber: 0, time: 0, food: 0, fmade: 0 };
   const RACES = { human: 'Human', orc: 'Orc', undead: 'Undead', nightelf: 'Night Elf' };
   const RACE_COLOR = { human: '#4a7fd1', orc: '#c0532f', undead: '#8a56c4', nightelf: '#3ea17a' };
-  const KINDS = { building: 'Buildings', unit: 'Units', hero: 'Heroes', research: 'Research' };
+  const KINDS = { building: 'Buildings', unit: 'Units', hero: 'Heroes', research: 'Research', directive: 'Directives' };
+  const DIRECTIVES = ['Creep', 'Expand', 'Scout', 'Harass', 'Defend', 'Tech up', 'Attack', 'Retreat', 'Push lumber', 'Hold gold'];
   const START = { human: 'htow', orc: 'ogre', undead: 'unpl', nightelf: 'etol' };   // starting town hall
   const START_WORKERS = 5;
   const DESKTOP = !!window.desktop;
@@ -13,8 +15,10 @@
   const DEFAULT_KEYS = { toggle: 'F8', next: 'F9', reset: 'Shift+F8', mode: 'F7', click: 'F10' };
 
   const $ = s => document.querySelector(s);
-  function norm(s) { return { id: s.id, qty: Math.max(1, s.qty | 0 || 1), plan: s.plan == null ? null : s.plan, job: s.job || '', done: !!s.done, at: s.at == null ? null : s.at }; }
-  const slim = ({ id, qty, plan, job }) => ({ id, qty, plan, job });
+  function norm(s) { return { id: s.id, qty: Math.max(1, s.qty | 0 || 1), plan: s.plan == null ? null : s.plan, job: s.job || '', done: !!s.done, at: s.at == null ? null : s.at, note: s.note || '' }; }
+  const slim = ({ id, qty, plan, job, note }) => ({ id, qty, plan, job, note });
+  const stepName = s => s.id === 'dir' ? s.note : BY_ID[s.id].name + (s.qty > 1 ? ' ×' + s.qty : '');
+  function dirIcon(cls) { const w = document.createElement('div'); w.className = cls || ''; const t = Object.assign(document.createElement('div'), { className: 'tile dir', textContent: '!' }); w.appendChild(t); return w; }
   const WORKERS = new Set(['hpea', 'opeo', 'uaco', 'ewsp']);
   const JOBS = { gold: 'Gold', lumber: 'Lumber', scout: 'Scout' };
   const jobText = j => !j ? '' : j.startsWith('b:') ? 'Build ' + (BY_ID[j.slice(2)] ? BY_ID[j.slice(2)].name : j.slice(2)) : (JOBS[j] || j);
@@ -112,6 +116,19 @@
   function renderPicker() {
     const grid = $('#grid'); grid.textContent = '';
     const q = S.q.trim().toLowerCase();
+    if (S.kind === 'directive' && !q) {
+      for (const t of DIRECTIVES) {
+        const b = Object.assign(document.createElement('button'), { className: 'item dirbtn', title: t }); b.append(dirIcon(), Object.assign(document.createElement('span'), { className: 'cap', textContent: t }));
+        b.onclick = () => addDirective(t); grid.appendChild(b);
+      }
+      const row = document.createElement('div'); row.className = 'dir-custom';
+      const inp = Object.assign(document.createElement('input'), { placeholder: 'Custom directive…', maxLength: 60 });
+      const go = Object.assign(document.createElement('button'), { textContent: 'Add' });
+      const submit = () => { if (inp.value.trim()) { addDirective(inp.value.trim()); inp.value = ''; } };
+      go.onclick = submit; inp.onkeydown = e => { if (e.key === 'Enter') submit(); };
+      row.append(inp, go); grid.appendChild(row);
+      return;
+    }
     const items = DATA.filter(d => d.race === S.race && (q ? d.name.toLowerCase().includes(q) : d.kind === S.kind));
     items.sort((a, b) => (a.gold + a.lumber) - (b.gold + b.lumber));
     for (const d of items) {
@@ -129,10 +146,11 @@
 
   // ---------- chain
   function snapshot() { history.push(JSON.stringify(S.chain)); if (history.length > 50) history.shift(); }
+  function addDirective(note) { snapshot(); S.chain.push(norm({ id: 'dir', note })); persist(); renderChain(); renderNow(); const l = $('#chainList'); l.scrollTop = l.scrollHeight; }
   function add(id) {
     snapshot();
     const last = S.chain[S.chain.length - 1], d = BY_ID[id];
-    if (last && last.id === id && !last.done && d.kind !== 'building' && d.kind !== 'research') last.qty++;
+    if (last && last.id === id && !last.done && d.kind !== 'building' && d.kind !== 'research' && d.kind !== 'directive') last.qty++;
     else S.chain.push(norm({ id }));
     persist(); renderChain(); renderNow(); const l = $('#chainList'); l.scrollTop = l.scrollHeight; }
   function remove(i) { snapshot(); S.chain.splice(i, 1); persist(); renderChain(); renderNow(); }
@@ -165,16 +183,17 @@
       const li = document.createElement('li');
       li.className = 'step' + (i === cur ? ' current' : '') + (s.done ? ' done' : '');
       const num = Object.assign(document.createElement('div'), { className: 'num', textContent: i + 1 });
-      const pic = iconEl(d, 'pic');
+      const pic = s.id === 'dir' ? dirIcon('pic') : iconEl(d, 'pic');
       const info = document.createElement('div');
       info.innerHTML = `<div class="sname"></div><div class="meta"><span class="g">${d.gold * s.qty}g</span> <span class="l">${d.lumber * s.qty}l</span> · ${d.time}s${s.plan != null ? ' · <span class="plan">@' + fmt(s.plan * 1000) + '</span>' : ''} <span class="tot">· total <span class="g">${gold}</span>/<span class="l">${lumber}</span> · <span class="${used > cap ? 'over' : ''}">supply ${used}/${cap}</span></span></div>`;
-      info.firstChild.textContent = d.name + (s.qty > 1 ? ' ×' + s.qty : '');
+      info.firstChild.textContent = stepName(s);
+      if (s.id === 'dir') info.querySelector('.meta').innerHTML = 'Directive' + (s.plan != null ? ' · <span class="plan">@' + fmt(s.plan * 1000) + '</span>' : '');
       const btns = document.createElement('div'); btns.className = 'btns';
       const stamp = Object.assign(document.createElement('span'), { className: 'stamp', textContent: s.at == null ? '' : fmt(s.at * 1000) + (s.plan != null ? ' (' + (s.at - s.plan >= 0 ? '+' : '−') + Math.abs(s.at - s.plan) + 's)' : '') });
       const tin = Object.assign(document.createElement('input'), { className: 'plan-in', value: s.plan == null ? '' : fmt(s.plan * 1000), placeholder: 'm:ss', size: 5, title: 'Target time for this step (m:ss). Blank = none.' });
       tin.onchange = () => { const v = parseTime(tin.value); if (v === undefined) { tin.value = s.plan == null ? '' : fmt(s.plan * 1000); return; } snapshot(); s.plan = v; persist(); renderChain(); renderNow(); };
       btns.append(tin, stamp);
-      for (const [label, fn, t] of [['−', () => qty(i, -1), 'One fewer'], ['+', () => qty(i, 1), 'One more'], ['↑', () => move(i, -1), 'Move up'], ['↓', () => move(i, 1), 'Move down'], ['✕', () => remove(i), 'Remove']]) {
+      for (const [label, fn, t] of [...(s.id === 'dir' ? [] : [['−', () => qty(i, -1), 'One fewer'], ['+', () => qty(i, 1), 'One more']]), ['↑', () => move(i, -1), 'Move up'], ['↓', () => move(i, 1), 'Move down'], ['✕', () => remove(i), 'Remove']]) {
         const b = Object.assign(document.createElement('button'), { textContent: label, title: t }); b.onclick = fn; btns.appendChild(b);
       }
       if (WORKERS.has(s.id)) {
@@ -205,10 +224,10 @@
     const d = BY_ID[S.chain[i].id], n = S.chain[i + 1] && BY_ID[S.chain[i + 1].id];
     el.textContent = '';
     const text = (cls, t) => el.appendChild(Object.assign(document.createElement('span'), { className: cls, textContent: t }));
-    text('lbl', 'Now'); el.appendChild(iconEl(d, 'pic')); el.lastChild.style.cssText = 'width:36px;height:36px;border-radius:5px;overflow:hidden';
-    text('name', d.name + (S.chain[i].qty > 1 ? ' ×' + S.chain[i].qty : ''));
+    text('lbl', 'Now'); el.appendChild(S.chain[i].id === 'dir' ? dirIcon('pic') : iconEl(d, 'pic')); el.lastChild.style.cssText = 'width:36px;height:36px;border-radius:5px;overflow:hidden';
+    text('name', stepName(S.chain[i]));
     if (S.chain[i].job) text('job', '→ ' + jobText(S.chain[i].job));
-    if (n) text('next', '→ next: ' + n.name);
+    if (n) text('next', '→ next: ' + stepName(S.chain[i + 1]));
     text('eta', '').id = 'eta';
   }
 

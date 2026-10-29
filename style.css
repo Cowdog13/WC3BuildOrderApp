@@ -116,3 +116,8 @@ body.overlay .plan-in { display: none; }
 body.overlay .jobtxt { display: inline; }
 body.overlay select.job { display: none; }
 .now .job { color: var(--lumber); font-weight: 600; }
+
+.tile.dir { --c: #b8860b; font-size: 22px; }
+.step .pic .tile.dir { font-size: 22px; }
+.dir-custom { grid-column: 1 / -1; display: flex; gap: 6px; }
+.dir-custom input { flex: 1; }
