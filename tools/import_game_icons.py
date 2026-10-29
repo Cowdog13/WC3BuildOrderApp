@@ -22,6 +22,8 @@ def candidates(args):
     """Yield (stem, opener) for every image under a folder or inside a .zip."""
     import io, zipfile
     for path in args:
+        if not os.path.exists(path):
+            sys.exit("Cannot find %r - check the path (put it in quotes if it has spaces)." % path)
         if zipfile.is_zipfile(path):
             z = zipfile.ZipFile(path)
             for n in z.namelist():
@@ -77,6 +79,8 @@ def main():
         except Exception as e:
             print("could not convert", stem + ext, "->", e)
     print("converted %d icons (%d other files ignored)" % (done, skipped))
+    if not done and not skipped:
+        print("Found no image files at all in", args[0], "- is this the right zip/folder?")
     if want is not None:
         missing = sorted(names[k] for k in want if k not in got)
         if missing: print("still missing %d: %s" % (len(missing), ", ".join(missing)))
