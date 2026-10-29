@@ -36,6 +36,7 @@
 
   // ---------- timer
   const elapsed = () => S.timer.base + (S.timer.running ? Date.now() - S.timer.since : 0);
+  const parseTime = t => { t = String(t).trim(); if (!t) return null; const m = /^(\d+):(\d{1,2})$/.exec(t); if (m) return +m[1] * 60 + +m[2]; return /^\d+$/.test(t) ? +t : undefined; };
   const fmt = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
   function toggleTimer() {
     if (S.timer.running) { S.timer = { running: false, base: elapsed(), since: 0 }; }
@@ -43,7 +44,16 @@
     persist(); renderTimer();
   }
   function resetTimer() { S.timer = { running: false, base: 0, since: 0 }; persist(); renderTimer(); }
+  function renderEta() {
+    const el = $('#eta'), i = currentIndex(); if (!el) return;
+    const s = S.chain[i];
+    if (!s || s.plan == null) { el.textContent = ''; return; }
+    const d = s.plan - Math.floor(elapsed() / 1000);
+    el.textContent = (d >= 0 ? 'in ' : 'late ') + fmt(Math.abs(d) * 1000) + ' (@' + fmt(s.plan * 1000) + ')';
+    el.classList.toggle('over', d < 0 && S.timer.running);
+  }
   function renderTimer() {
+    renderEta();
     $('#clock').textContent = fmt(elapsed());
     $('#clock').classList.toggle('running', S.timer.running);
     $('#btnStart').textContent = S.timer.running ? 'Pause' : (S.timer.base ? 'Resume' : 'Start');
@@ -153,11 +163,13 @@
       const num = Object.assign(document.createElement('div'), { className: 'num', textContent: i + 1 });
       const pic = iconEl(d, 'pic');
       const info = document.createElement('div');
-      info.innerHTML = `<div class="sname"></div><div class="meta"><span class="g">${d.gold * s.qty}g</span> <span class="l">${d.lumber * s.qty}l</span> · ${d.time}s${s.plan != null ? ' · <span class="plan">replay @' + fmt(s.plan * 1000) + '</span>' : ''} <span class="tot">· total <span class="g">${gold}</span>/<span class="l">${lumber}</span> · <span class="${used > cap ? 'over' : ''}">supply ${used}/${cap}</span></span></div>`;
+      info.innerHTML = `<div class="sname"></div><div class="meta"><span class="g">${d.gold * s.qty}g</span> <span class="l">${d.lumber * s.qty}l</span> · ${d.time}s${s.plan != null ? ' · <span class="plan">@' + fmt(s.plan * 1000) + '</span>' : ''} <span class="tot">· total <span class="g">${gold}</span>/<span class="l">${lumber}</span> · <span class="${used > cap ? 'over' : ''}">supply ${used}/${cap}</span></span></div>`;
       info.firstChild.textContent = d.name + (s.qty > 1 ? ' ×' + s.qty : '');
       const btns = document.createElement('div'); btns.className = 'btns';
-      const stamp = Object.assign(document.createElement('span'), { className: 'stamp', textContent: s.at == null ? '' : fmt(s.at * 1000) });
-      btns.appendChild(stamp);
+      const stamp = Object.assign(document.createElement('span'), { className: 'stamp', textContent: s.at == null ? '' : fmt(s.at * 1000) + (s.plan != null ? ' (' + (s.at - s.plan >= 0 ? '+' : '−') + Math.abs(s.at - s.plan) + 's)' : '') });
+      const tin = Object.assign(document.createElement('input'), { className: 'plan-in', value: s.plan == null ? '' : fmt(s.plan * 1000), placeholder: 'm:ss', size: 5, title: 'Target time for this step (m:ss). Blank = none.' });
+      tin.onchange = () => { const v = parseTime(tin.value); if (v === undefined) { tin.value = s.plan == null ? '' : fmt(s.plan * 1000); return; } snapshot(); s.plan = v; persist(); renderChain(); renderNow(); };
+      btns.append(tin, stamp);
       for (const [label, fn, t] of [['−', () => qty(i, -1), 'One fewer'], ['+', () => qty(i, 1), 'One more'], ['↑', () => move(i, -1), 'Move up'], ['↓', () => move(i, 1), 'Move down'], ['✕', () => remove(i), 'Remove']]) {
         const b = Object.assign(document.createElement('button'), { textContent: label, title: t }); b.onclick = fn; btns.appendChild(b);
       }
@@ -179,6 +191,7 @@
     text('lbl', 'Now'); el.appendChild(iconEl(d, 'pic')); el.lastChild.style.cssText = 'width:36px;height:36px;border-radius:5px;overflow:hidden';
     text('name', d.name + (S.chain[i].qty > 1 ? ' ×' + S.chain[i].qty : ''));
     if (n) text('next', '→ next: ' + n.name);
+    text('eta', '').id = 'eta';
   }
 
   // ---------- hotkeys
@@ -253,9 +266,9 @@
     const name = $('#saveName').value.trim(); if (!name) return;
     S.saved[name] = { race: S.race, steps: S.chain.map(({ id, qty, plan }) => ({ id, qty, plan })) }; store.set('saved', S.saved); renderSaved();
   };
-  $('#btnExport').onclick = async () => { try { await navigator.clipboard.writeText(exportText()); } catch { prompt('Copy this:', exportText()); } };
+  $('#btnExport').onclick = async () => { try { await navigator.clipboard.writeText(exportText()); } catch { alert(exportText()); } };
   $('#btnImport').onclick = async () => {
-    let t; try { t = await navigator.clipboard.readText(); } catch { t = prompt('Paste build JSON:'); }
+    let t; try { t = await navigator.clipboard.readText(); } catch { t = ''; }
     try { const b = JSON.parse(t); const list = b.steps || b.ids; if (!RACES[b.race] || !Array.isArray(list)) throw 0; snapshot(); S.race = b.race; S.chain = stepsOf(list); persist(); render(); }
     catch { alert('That does not look like an exported build.'); }
   };
@@ -273,8 +286,7 @@
       if (!humans.length) throw new Error('No player with a known race and commands found in this replay.');
       let pl = humans[0];
       if (humans.length > 1) {
-        const pick = prompt('Which player?\n' + humans.map((p, i) => `${i + 1}: ${p.name} (${RACES[p.race]})`).join('\n'), '1');
-        pl = humans[(parseInt(pick, 10) || 1) - 1] || humans[0];
+        pl = humans.find(p => confirm(`Use ${p.name}'s build (${RACES[p.race]})?\nOK = yes, Cancel = try the next player`)) || humans[0];
       }
       if (S.chain.length && !confirm('Replace the current build order with ' + pl.name + "'s build from the replay?")) return;
       const items = DATA.filter(d => d.race === pl.race), byId = Object.fromEntries(items.map(d => [d.id, d]));

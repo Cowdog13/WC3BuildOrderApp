@@ -102,3 +102,11 @@ body.overlay .step .btns .stamp { display: none; }
 body.overlay .step .meta { font-size: 11px; }
 body.overlay .toast { display: none; }
 body.clickthrough .top::after { content: 'click-through'; position: absolute; right: 8px; bottom: -14px; font-size: 10px; color: var(--accent); }
+
+.plan-in { width: 52px; padding: 2px 4px; font: 12px ui-monospace, monospace; text-align: center; }
+.now .eta { margin-left: auto; font: 600 14px ui-monospace, monospace; color: var(--gold); }
+.now .eta.over { color: var(--red); }
+.stamp { min-width: 68px; }
+.step .meta .plan { display: none; }
+body.overlay .step .meta .plan { display: inline; }
+body.overlay .plan-in { display: none; }
