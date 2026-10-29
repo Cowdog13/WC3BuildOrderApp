@@ -15,7 +15,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def wanted():
     src = open(os.path.join(ROOT, "data.js"), encoding="utf-8").read()
     data = json.loads(re.search(r"window\.WC3_DATA = (.*);\s*$", src, re.S).group(1))
-    return {e["btn"].lower() for e in data if e.get("btn")}
+    return {e["btn"].lower() for e in data if e.get("btn") and not e.get("img")}
 
 def candidates(args):
     """Yield (stem, opener) for every image under a folder or inside a .zip."""
@@ -43,7 +43,7 @@ def main():
     names = {}                      # canonical BTN name (as in data.js) by lowercase
     if want is not None:
         src = open(os.path.join(ROOT, "data.js"), encoding="utf-8").read()
-        for m in re.finditer(r'"btn": "(BTN[^"]+)"', src): names[m.group(1).lower()] = m.group(1)
+        for k in want: names[k] = next(m for m in re.findall(r'"btn": "(BTN[^"]+)"', src) if m.lower() == k)
     for (stem, ext), opener in candidates(args):
         if ext.lower() not in (".blp", ".dds", ".tga", ".png", ".jpg", ".webp"): continue
         key = stem.lower() if stem.lower().startswith("btn") else "btn" + stem.lower()
