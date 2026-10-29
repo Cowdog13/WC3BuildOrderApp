@@ -1768,7 +1768,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "hlum",
   "rid": "Rhlh",
-  "btn": "BTNImprovedLumberHarvesting",
+  "btn": "BTNBundleOfLumber",
   "img": null
  },
  {
@@ -1783,7 +1783,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "hlum",
   "rid": "Rhlh",
-  "btn": "BTNAdvancedLumberHarvesting",
+  "btn": "BTNBundleOfLumber",
   "img": null
  },
  {
@@ -1798,7 +1798,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "hlum",
   "rid": "Rhac",
-  "btn": "BTNMasonry",
+  "btn": "BTNImbuedMasonry",
   "img": null
  },
  {
@@ -1813,7 +1813,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "hlum",
   "rid": "Rhac",
-  "btn": "BTNAdvancedMasonry",
+  "btn": "BTNImbuedMasonry",
   "img": null
  },
  {
@@ -1843,7 +1843,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "hbar",
   "rid": "Rhri",
-  "btn": "BTNLongRifles",
+  "btn": "BTNDwarvenLongRifle",
   "img": null
  },
  {
@@ -1993,7 +1993,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "harm",
   "rid": "Rhgb",
-  "btn": "BTNFlyingMachineBombs",
+  "btn": "BTNFlyingMachine",
   "img": null
  },
  {
@@ -2493,7 +2493,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rume",
-  "btn": null,
+  "btn": "BTNUnholyStrength",
   "img": null
  },
  {
@@ -2508,7 +2508,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rume",
-  "btn": null,
+  "btn": "BTNImprovedUnholyStrength",
   "img": null
  },
  {
@@ -2523,7 +2523,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rume",
-  "btn": null,
+  "btn": "BTNAdvancedUnholyStrength",
   "img": null
  },
  {
@@ -2538,7 +2538,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rura",
-  "btn": null,
+  "btn": "BTNCreatureAttack",
   "img": null
  },
  {
@@ -2553,7 +2553,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rura",
-  "btn": null,
+  "btn": "BTNImprovedCreatureAttack",
   "img": null
  },
  {
@@ -2568,7 +2568,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rura",
-  "btn": null,
+  "btn": "BTNAdvancedCreatureAttack",
   "img": null
  },
  {
@@ -2583,7 +2583,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Ruar",
-  "btn": null,
+  "btn": "BTNUnholyArmor",
   "img": null
  },
  {
@@ -2598,7 +2598,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Ruar",
-  "btn": null,
+  "btn": "BTNImprovedUnholyArmor",
   "img": null
  },
  {
@@ -2613,7 +2613,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Ruar",
-  "btn": null,
+  "btn": "BTNAdvancedUnholyArmor",
   "img": null
  },
  {
@@ -2628,7 +2628,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rucr",
-  "btn": null,
+  "btn": "BTNCreatureCarapace",
   "img": null
  },
  {
@@ -2643,7 +2643,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rucr",
-  "btn": null,
+  "btn": "BTNImprovedCreatureCarapace",
   "img": null
  },
  {
@@ -2658,7 +2658,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "ugrv",
   "rid": "Rucr",
-  "btn": null,
+  "btn": "BTNAdvancedCreatureCarapace",
   "img": null
  },
  {
@@ -2673,7 +2673,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "usep",
   "rid": "Rugf",
-  "btn": null,
+  "btn": "BTNGhoulFrenzy",
   "img": null
  },
  {
@@ -2688,7 +2688,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "usep",
   "rid": "Ruac",
-  "btn": null,
+  "btn": "BTNCannibalize",
   "img": null
  },
  {
@@ -2703,7 +2703,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "usep",
   "rid": "Rusf",
-  "btn": null,
+  "btn": "BTNStoneForm",
   "img": null
  },
  {
@@ -2718,7 +2718,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "usep",
   "rid": "Rubu",
-  "btn": null,
+  "btn": "BTNNagaBurrow",
   "img": null
  },
  {
@@ -2733,7 +2733,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "usep",
   "rid": "Ruwb",
-  "btn": null,
+  "btn": "BTNWeb",
   "img": null
  },
  {
@@ -2747,7 +2747,7 @@ window.WC3_DATA = [
   "kind": "research",
   "icon": null,
   "by": "uslh",
-  "btn": null,
+  "btn": "BTNPlagueCloud",
   "img": null
  },
  {
@@ -2761,7 +2761,7 @@ window.WC3_DATA = [
   "kind": "research",
   "icon": null,
   "by": "uslh",
-  "btn": null,
+  "btn": "BTNExhumeCorpses",
   "img": null
  },
  {
@@ -2776,7 +2776,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "utod",
   "rid": "Rune",
-  "btn": null,
+  "btn": "BTNNecromancerAdept",
   "img": null
  },
  {
@@ -2791,7 +2791,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "utod",
   "rid": "Rune",
-  "btn": null,
+  "btn": "BTNNecromancerMaster",
   "img": null
  },
  {
@@ -2806,7 +2806,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "utod",
   "rid": "Ruba",
-  "btn": null,
+  "btn": "BTNBansheeAdept",
   "img": null
  },
  {
@@ -2821,7 +2821,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "utod",
   "rid": "Ruba",
-  "btn": null,
+  "btn": "BTNBansheeMaster",
   "img": null
  },
  {
@@ -2835,7 +2835,7 @@ window.WC3_DATA = [
   "kind": "research",
   "icon": null,
   "by": "ubon",
-  "btn": null,
+  "btn": "BTNFreezingBreath",
   "img": null
  },
  {
@@ -2850,7 +2850,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Resm",
-  "btn": null,
+  "btn": "BTNStrengthOfTheMoon",
   "img": null
  },
  {
@@ -2865,7 +2865,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Resm",
-  "btn": null,
+  "btn": "BTNImprovedStrengthOfTheMoon",
   "img": null
  },
  {
@@ -2880,7 +2880,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Resm",
-  "btn": null,
+  "btn": "BTNAdvancedStrengthOfTheMoon",
   "img": null
  },
  {
@@ -2895,7 +2895,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Resw",
-  "btn": null,
+  "btn": "BTNStrengthOfTheWild",
   "img": null
  },
  {
@@ -2910,7 +2910,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Resw",
-  "btn": null,
+  "btn": "BTNImprovedStrengthOfTheWild",
   "img": null
  },
  {
@@ -2925,7 +2925,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Resw",
-  "btn": null,
+  "btn": "BTNAdvancedStrengthOfTheWild",
   "img": null
  },
  {
@@ -2940,7 +2940,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Rema",
-  "btn": null,
+  "btn": "BTNMoonArmor",
   "img": null
  },
  {
@@ -2955,7 +2955,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Rema",
-  "btn": null,
+  "btn": "BTNImprovedMoonArmor",
   "img": null
  },
  {
@@ -2970,7 +2970,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Rema",
-  "btn": null,
+  "btn": "BTNAdvancedMoonArmor",
   "img": null
  },
  {
@@ -2985,7 +2985,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Rerh",
-  "btn": null,
+  "btn": "BTNReinforcedHides",
   "img": null
  },
  {
@@ -3000,7 +3000,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Rerh",
-  "btn": null,
+  "btn": "BTNReinforcedHides",
   "img": null
  },
  {
@@ -3015,7 +3015,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaom",
   "rid": "Rerh",
-  "btn": null,
+  "btn": "BTNReinforcedHides",
   "img": null
  },
  {
@@ -3030,7 +3030,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "edob",
   "rid": "Remk",
-  "btn": null,
+  "btn": "BTNMarksmanship",
   "img": null
  },
  {
@@ -3045,7 +3045,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "edob",
   "rid": "Reib",
-  "btn": null,
+  "btn": "BTNImprovedBows",
   "img": null
  },
  {
@@ -3060,7 +3060,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "edob",
   "rid": "Resc",
-  "btn": null,
+  "btn": "BTNSentinel",
   "img": null
  },
  {
@@ -3075,7 +3075,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "edob",
   "rid": "Remg",
-  "btn": null,
+  "btn": "BTNUpgradeMoonGlaive",
   "img": null
  },
  {
@@ -3090,7 +3090,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "edob",
   "rid": "Reuv",
-  "btn": null,
+  "btn": "BTNUltravision",
   "img": null
  },
  {
@@ -3104,7 +3104,7 @@ window.WC3_DATA = [
   "kind": "research",
   "icon": null,
   "by": "edob",
-  "btn": null,
+  "btn": "BTNWellSpring",
   "img": null
  },
  {
@@ -3118,7 +3118,7 @@ window.WC3_DATA = [
   "kind": "research",
   "icon": null,
   "by": "eaoe",
-  "btn": null,
+  "btn": "BTNBearForm",
   "img": null
  },
  {
@@ -3132,7 +3132,7 @@ window.WC3_DATA = [
   "kind": "research",
   "icon": null,
   "by": "eaoe",
-  "btn": null,
+  "btn": "BTNResistantSkin",
   "img": null
  },
  {
@@ -3160,7 +3160,7 @@ window.WC3_DATA = [
   "kind": "research",
   "icon": null,
   "by": "eaoe",
-  "btn": null,
+  "btn": "BTNHardenedSkin",
   "img": null
  },
  {
@@ -3189,7 +3189,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaow",
   "rid": "Redt",
-  "btn": null,
+  "btn": "BTNDOTAdeptTraining",
   "img": null
  },
  {
@@ -3204,7 +3204,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaow",
   "rid": "Redt",
-  "btn": null,
+  "btn": "BTNDOTMasterTraining",
   "img": null
  },
  {
@@ -3219,7 +3219,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaoe",
   "rid": "Redc",
-  "btn": null,
+  "btn": "BTNDOCAdeptTraining",
   "img": null
  },
  {
@@ -3234,7 +3234,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "eaoe",
   "rid": "Redc",
-  "btn": null,
+  "btn": "BTNDOCMasterTraining",
   "img": null
  },
  {
@@ -3249,7 +3249,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "etol",
   "rid": "Renb",
-  "btn": null,
+  "btn": "BTNNaturesBlessing",
   "img": null
  },
  {
@@ -3264,7 +3264,7 @@ window.WC3_DATA = [
   "icon": null,
   "by": "etol",
   "rid": "Roen",
-  "btn": null,
+  "btn": "BTNEnsnare",
   "img": null
  },
  {
@@ -3278,7 +3278,7 @@ window.WC3_DATA = [
   "kind": "research",
   "icon": null,
   "by": "edos",
-  "btn": null,
+  "btn": "BTNCorrosiveBreath",
   "img": null
  }
 ];

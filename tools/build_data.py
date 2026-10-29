@@ -200,14 +200,33 @@ ICON_BTN = {
     "Black Gunpowder": "BTNHumanMissileUpOne", "Refined Gunpowder": "BTNHumanMissileUpTwo", "Imbued Gunpowder": "BTNHumanMissileUpThree",
     "Iron Plating": "BTNHumanArmorUpOne", "Steel Plating": "BTNHumanArmorUpTwo", "Mithril Plating": "BTNHumanArmorUpThree",
     "Studded Leather Armor": "BTNLeatherUpgradeOne", "Reinforced Leather Armor": "BTNLeatherUpgradeTwo", "Dragonhide Armor": "BTNLeatherUpgradeThree",
-    "Improved Lumber Harvesting": "BTNImprovedLumberHarvesting", "Advanced Lumber Harvesting": "BTNAdvancedLumberHarvesting",
-    "Masonry": "BTNMasonry", "Advanced Masonry": "BTNAdvancedMasonry", "Imbued Masonry": "BTNImbuedMasonry",
-    "Long Rifles": "BTNLongRifles", "Defend": "BTNDefend", "Animal War Training": "BTNAnimalWarTraining",
+    "Improved Lumber Harvesting": "BTNBundleOfLumber", "Advanced Lumber Harvesting": "BTNBundleOfLumber",
+    "Masonry": "BTNImbuedMasonry", "Advanced Masonry": "BTNImbuedMasonry", "Imbued Masonry": "BTNImbuedMasonry",   # only the Imbued icon is in the icon pack
+    "Long Rifles": "BTNDwarvenLongRifle", "Defend": "BTNDefend", "Animal War Training": "BTNAnimalWarTraining",
     "Priest Adept Training": "BTNPriestAdept", "Priest Master Training": "BTNPriestMaster",
     "Sorceress Adept Training": "BTNSorceressAdept", "Sorceress Master Training": "BTNSorceressMaster",
     "Magic Sentry": "BTNMagicalSentry", "Control Magic": "BTNControlMagic", "Fragmentation Shards": "BTNFragmentationBombs",
-    "Flak Cannons": "BTNFlakCannons", "Flying Machine Bombs": "BTNFlyingMachineBombs", "Flare": "BTNFlare", "Barrage": "BTNBarrage",
+    "Flak Cannons": "BTNFlakCannons", "Flying Machine Bombs": "BTNFlyingMachine", "Flare": "BTNFlare", "Barrage": "BTNBarrage",
     "Storm Hammers": "BTNStormHammer", "Cloud": "BTNCloud", "human:Backpack": "BTNPackBeast",
+    # Undead
+    "Unholy Strength": "BTNUnholyStrength", "Unholy Strength II": "BTNImprovedUnholyStrength", "Unholy Strength III": "BTNAdvancedUnholyStrength",
+    "Creature Attack": "BTNCreatureAttack", "Creature Attack II": "BTNImprovedCreatureAttack", "Creature Attack III": "BTNAdvancedCreatureAttack",
+    "Unholy Armor": "BTNUnholyArmor", "Unholy Armor II": "BTNImprovedUnholyArmor", "Unholy Armor III": "BTNAdvancedUnholyArmor",
+    "Creature Carapace": "BTNCreatureCarapace", "Creature Carapace II": "BTNImprovedCreatureCarapace", "Creature Carapace III": "BTNAdvancedCreatureCarapace",
+    "Ghoul Frenzy": "BTNGhoulFrenzy", "Cannibalize": "BTNCannibalize", "Stone Form": "BTNStoneForm", "Burrow": "BTNNagaBurrow",
+    "Web": "BTNWeb", "Disease Cloud": "BTNPlagueCloud", "Exhume Corpses": "BTNExhumeCorpses",
+    "Necromancer Adept Training": "BTNNecromancerAdept", "Necromancer Master Training": "BTNNecromancerMaster",
+    "Banshee Adept Training": "BTNBansheeAdept", "Banshee Master Training": "BTNBansheeMaster", "Freezing Breath": "BTNFreezingBreath",
+    # Night Elf
+    "Strength of the Moon": "BTNStrengthOfTheMoon", "Improved Strength of the Moon": "BTNImprovedStrengthOfTheMoon", "Advanced Strength of the Moon": "BTNAdvancedStrengthOfTheMoon",
+    "Strength of the Wild": "BTNStrengthOfTheWild", "Improved Strength of the Wild": "BTNImprovedStrengthOfTheWild", "Advanced Strength of the Wild": "BTNAdvancedStrengthOfTheWild",
+    "Moon Armor": "BTNMoonArmor", "Improved Moon Armor": "BTNImprovedMoonArmor", "Advanced Moon Armor": "BTNAdvancedMoonArmor",
+    "Hide Armor": "BTNReinforcedHides", "Improved Hide Armor": "BTNReinforcedHides", "Advanced Hide Armor": "BTNReinforcedHides",
+    "Marksmanship": "BTNMarksmanship", "Improved Bows": "BTNImprovedBows", "Sentinel": "BTNSentinel", "Moon Glaive": "BTNUpgradeMoonGlaive",
+    "Ultravision": "BTNUltravision", "Well Spring": "BTNWellSpring", "Bear Form": "BTNBearForm", "Resistant Skin": "BTNResistantSkin",
+    "Hardened Skin": "BTNHardenedSkin", "Nature's Blessing": "BTNNaturesBlessing", "Ensnare": "BTNEnsnare", "Corrosive Breath": "BTNCorrosiveBreath",
+    "Druid of the Talon Adept Training": "BTNDOTAdeptTraining", "Druid of the Talon Master Training": "BTNDOTMasterTraining",
+    "Druid of the Claw Adept Training": "BTNDOCAdeptTraining", "Druid of the Claw Master Training": "BTNDOCMasterTraining",
 }
 
 out, seen = [], set()
