@@ -26,18 +26,36 @@ def wanted():
         names.setdefault(e["btn"], []).append(e["name"])
     return names
 
-def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "wc3-build-tracker-icon-fetch/1.0"})
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+WIKIS = ["https://wc3.fandom.com", "https://warcraft.fandom.com"]
+VERBOSE = False
+
+def get(url):
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
     with urllib.request.urlopen(req, timeout=20) as r:
-        body = r.read()
-    if not body.startswith(b"\x89PNG"): raise ValueError("not a PNG")
+        return r.read()
+
+def fetch(url):
+    body = get(url)
+    if not body.startswith(b"\x89PNG"): raise ValueError("not a PNG (got %r)" % body[:20])
     return body
+
+def via_api(wiki, name):
+    """Ask the wiki's MediaWiki API where File:<name>.png lives, then download it."""
+    q = urllib.parse.urlencode({"action": "query", "titles": "File:%s.png" % name, "prop": "imageinfo",
+                                "iiprop": "url", "format": "json"})
+    pages = json.loads(get(wiki + "/api.php?" + q))["query"]["pages"]
+    for p in pages.values():
+        if p.get("imageinfo"): return fetch(p["imageinfo"][0]["url"])
+    raise ValueError("no such file on " + wiki)
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("-v", "--verbose", action="store_true", help="print why each attempt failed")
     ap.add_argument("--base", action="append", help="extra URL template with {name}")
     a = ap.parse_args()
+    global VERBOSE; VERBOSE = a.verbose
     templates = (a.base or []) + TEMPLATES
     os.makedirs(os.path.join(ROOT, "icons"), exist_ok=True)
     todo = {n: u for n, u in wanted().items() if not os.path.exists(os.path.join(ROOT, "icons", n + ".png"))}
@@ -47,10 +65,13 @@ def main():
         return
     missed = []
     for n in sorted(todo):
-        for t in templates:
+        attempts = [lambda t=t: fetch(t.format(name=urllib.parse.quote(n))) for t in templates] + \
+                   [lambda w=w: via_api(w, n) for w in WIKIS]
+        for attempt in attempts:
             try:
-                body = fetch(t.format(name=urllib.parse.quote(n)))
-            except (urllib.error.URLError, ValueError, TimeoutError):
+                body = attempt()
+            except (urllib.error.URLError, ValueError, TimeoutError, KeyError, json.JSONDecodeError) as e:
+                if VERBOSE: print("   fail", n, "->", e)
                 continue
             open(os.path.join(ROOT, "icons", n + ".png"), "wb").write(body)
             print("ok  ", n); break
