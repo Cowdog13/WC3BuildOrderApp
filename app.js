@@ -379,7 +379,7 @@
       const byRid = {}; for (const d of items) if (d.rid) (byRid[d.rid] = byRid[d.rid] || []).push(d);
       const b = W3G.toBuild(r.actions[pl.id], byId, byRid);
       snapshot(); S.race = pl.race; S.chain = stepsOf(b.steps); resetTimer(); persist(); render();
-      S.saved[f.name.replace(/\.w3g$/i, '') + ' – ' + pl.name] = { race: pl.race, steps: S.chain.map(slim) }; store.set('saved', S.saved);
+      S.saved[f.name.replace(/\.w3g$/i, '') + ' – ' + pl.name] = { race: pl.race, steps: S.chain.map(slim) }; store.set('saved', S.saved); renderLoadSel();
       const unk = Object.keys(b.unknown);
       toast(`Imported ${b.steps.length} steps for ${pl.name} (${RACES[pl.race]}). Hero skills, items and cancelled orders are not included.` +
         (unk.length ? ' Skipped unknown ids: ' + unk.join(', ') + '.' : ''));
