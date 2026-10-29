@@ -119,7 +119,7 @@
     if (S.kind === 'directive' && !q) {
       for (const t of DIRECTIVES) {
         const b = Object.assign(document.createElement('button'), { className: 'item dirbtn', title: t }); b.append(dirIcon(), Object.assign(document.createElement('span'), { className: 'cap', textContent: t }));
-        b.onclick = () => addDirective(t); grid.appendChild(b);
+        b.onclick = () => addDirective(t); b.draggable = true; b.ondragstart = e => { e.dataTransfer.setData('text/x-wc3', 'dir:' + t); e.dataTransfer.effectAllowed = 'copy'; }; grid.appendChild(b);
       }
       const row = document.createElement('div'); row.className = 'dir-custom';
       const inp = Object.assign(document.createElement('input'), { placeholder: 'Custom directive…', maxLength: 60 });
@@ -139,6 +139,7 @@
       const cap = document.createElement('span'); cap.className = 'cap'; cap.textContent = d.name;
       b.appendChild(cap);
       b.onclick = () => add(d.id);
+      b.draggable = true; b.ondragstart = e => { e.dataTransfer.setData('text/x-wc3', 'add:' + d.id); e.dataTransfer.effectAllowed = 'copy'; };
       grid.appendChild(b);
     }
     if (!items.length) grid.innerHTML = '<div class="empty">Nothing found</div>';
@@ -146,13 +147,18 @@
 
   // ---------- chain
   function snapshot() { history.push(JSON.stringify(S.chain)); if (history.length > 50) history.shift(); }
-  function addDirective(note) { snapshot(); S.chain.push(norm({ id: 'dir', note })); persist(); renderChain(); renderNow(); const l = $('#chainList'); l.scrollTop = l.scrollHeight; }
-  function add(id) {
+  function addDirective(note, at) { snapshot(); S.chain.splice(at == null ? S.chain.length : at, 0, norm({ id: 'dir', note })); persist(); renderChain(); renderNow(); if (at == null) { const l = $('#chainList'); l.scrollTop = l.scrollHeight; } }
+  function add(id, at) {
     snapshot();
     const last = S.chain[S.chain.length - 1], d = BY_ID[id];
-    if (last && last.id === id && !last.done && d.kind !== 'building' && d.kind !== 'research' && d.kind !== 'directive') last.qty++;
-    else S.chain.push(norm({ id }));
-    persist(); renderChain(); renderNow(); const l = $('#chainList'); l.scrollTop = l.scrollHeight; }
+    if (at == null && last && last.id === id && !last.done && d.kind !== 'building' && d.kind !== 'research' && d.kind !== 'directive') last.qty++;
+    else S.chain.splice(at == null ? S.chain.length : at, 0, norm({ id }));
+    persist(); renderChain(); renderNow(); if (at == null) { const l = $('#chainList'); l.scrollTop = l.scrollHeight; } }
+  function moveTo(from, to) {            // `to` = insert-before index in the current order
+    if (from === to || from + 1 === to) return;
+    snapshot(); const [x] = S.chain.splice(from, 1); S.chain.splice(from < to ? to - 1 : to, 0, x);
+    persist(); renderChain(); renderNow();
+  }
   function remove(i) { snapshot(); S.chain.splice(i, 1); persist(); renderChain(); renderNow(); }
   function move(i, dir) {
     const j = i + dir; if (j < 0 || j >= S.chain.length) return;
@@ -181,6 +187,7 @@
       const [used, cap] = supplyCap(i + 1);
       if (i < firstShown) return;
       const li = document.createElement('li');
+      li.dataset.i = i;
       li.className = 'step' + (i === cur ? ' current' : '') + (s.done ? ' done' : '');
       const num = Object.assign(document.createElement('div'), { className: 'num', textContent: i + 1 });
       const pic = s.id === 'dir' ? dirIcon('pic') : iconEl(d, 'pic');
@@ -309,6 +316,39 @@
     try { const b = JSON.parse(t); const list = b.steps || b.ids; if (!RACES[b.race] || !Array.isArray(list)) throw 0; snapshot(); S.race = b.race; S.chain = stepsOf(list); persist(); render(); }
     catch { alert('That does not look like an exported build.'); }
   };
+  // ---------- drag and drop (reorder, or drop a picker item at a position)
+  const list = $('#chainList');
+  let dragFrom = null;
+  list.addEventListener('mousedown', e => { const li = e.target.closest('.step'); if (li) li.draggable = !e.target.closest('input, select, button, textarea, option'); });
+  list.addEventListener('dragstart', e => {
+    const li = e.target.closest && e.target.closest('.step'); if (!li) return;
+    dragFrom = +li.dataset.i; e.dataTransfer.setData('text/x-wc3', 'move:' + dragFrom); e.dataTransfer.effectAllowed = 'move';
+    requestAnimationFrame(() => li.classList.add('dragging'));
+  });
+  const clearMarks = () => list.querySelectorAll('.drop-before, .drop-after').forEach(n => n.classList.remove('drop-before', 'drop-after'));
+  const dropIndex = e => {            // insert-before index under the pointer
+    const li = e.target.closest && e.target.closest('.step');
+    if (!li) return { index: S.chain.length, li: null, after: true };
+    const r = li.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+    return { index: +li.dataset.i + (after ? 1 : 0), li, after };
+  };
+  list.addEventListener('dragover', e => {
+    if (!e.dataTransfer.types.includes('text/x-wc3')) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = dragFrom == null ? 'copy' : 'move';
+    clearMarks(); const t = dropIndex(e); if (t.li) t.li.classList.add(t.after ? 'drop-after' : 'drop-before');
+    const r = list.getBoundingClientRect();                       // auto-scroll near the edges
+    if (e.clientY < r.top + 36) list.scrollTop -= 12; else if (e.clientY > r.bottom - 36) list.scrollTop += 12;
+  });
+  list.addEventListener('dragleave', e => { if (!list.contains(e.relatedTarget)) clearMarks(); });
+  list.addEventListener('drop', e => {
+    const data = e.dataTransfer.getData('text/x-wc3'); if (!data) return;
+    e.preventDefault(); clearMarks();
+    const { index } = dropIndex(e), [kind, val] = [data.slice(0, data.indexOf(':')), data.slice(data.indexOf(':') + 1)];
+    if (kind === 'move') moveTo(+val, index); else if (kind === 'add' && BY_ID[val]) add(val, index); else if (kind === 'dir') addDirective(val, index);
+    dragFrom = null;
+  });
+  list.addEventListener('dragend', () => { dragFrom = null; clearMarks(); list.querySelectorAll('.dragging').forEach(n => n.classList.remove('dragging')); list.querySelectorAll('.step').forEach(n => { n.draggable = false; }); });
+
   // ---------- replay import
   const BY_RID = {};
   for (const d of DATA) if (d.rid) (BY_RID[d.rid] = BY_RID[d.rid] || []).push(d);

@@ -121,3 +121,10 @@ body.overlay select.job { display: none; }
 .step .pic .tile.dir { font-size: 22px; }
 .dir-custom { grid-column: 1 / -1; display: flex; gap: 6px; }
 .dir-custom input { flex: 1; }
+
+.step { cursor: grab; }
+.step button, .step input, .step select { cursor: auto; }
+.step.dragging { opacity: .35; }
+.step.drop-before { box-shadow: 0 -3px 0 0 var(--accent); }
+.step.drop-after { box-shadow: 0 3px 0 0 var(--accent); }
+.item { cursor: pointer; }
