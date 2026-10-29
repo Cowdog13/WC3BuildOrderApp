@@ -7,7 +7,8 @@
 2. Run (folder or .zip):
        pip install pillow
        python tools/import_game_icons.py  path\\to\\icons.zip
-   Files are written to icons/<BTNName>.png (only the ones the app wants, unless --all)."""
+   Files are written to icons/<BTNName>.png (only the ones the app wants, unless --all).
+       --suggest   list zip file names that look like each item that still has no icon"""
 import json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,9 +31,30 @@ def candidates(args):
                 for f in files:
                     yield os.path.splitext(f), (lambda p=os.path.join(dirpath, f): p)
 
+def tokens(s):
+    return {t.lower() for t in re.findall(r"[A-Z][a-z]+|[a-z]+|\d+", s.replace("'", "")) if t.lower() not in ("btn", "of", "the")}
+
+def suggest(args):
+    """For every item still without an icon, list zip file names that look like it."""
+    src = open(os.path.join(ROOT, "data.js"), encoding="utf-8").read()
+    data = json.loads(re.search(r"window\.WC3_DATA = (.*);\s*$", src, re.S).group(1))
+    have = {f[:-4].lower() for f in os.listdir(os.path.join(ROOT, "icons"))} if os.path.isdir(os.path.join(ROOT, "icons")) else set()
+    stems = sorted({stem for (stem, ext), _ in candidates(args) if ext.lower() in (".blp", ".dds", ".tga", ".png") and stem.upper().startswith("BTN")})
+    seen = set()
+    for e in data:
+        if e.get("img") or (e.get("btn") and e["btn"].lower() in have): continue
+        key = (e["name"], e["race"], e.get("btn"))
+        if key in seen: continue
+        seen.add(key)
+        want = tokens(e["name"])
+        scored = sorted(((len(want & tokens(st)) - 0.01 * len(tokens(st)), st) for st in stems), reverse=True)[:6]
+        print("%-9s %-8s %-34s (currently %s)\n    %s" % (e["race"], e["kind"], e["name"], e.get("btn") or "no name",
+              ", ".join(st for sc, st in scored if sc > 0) or "-"))
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if not args: sys.exit(__doc__)
+    if "--suggest" in sys.argv: return suggest(args)
     try:
         from PIL import Image
     except ImportError:
