@@ -26,7 +26,7 @@
     q: '',
     chain: store.get('chain', []).filter(s => BY_ID[s.id]).map(norm),   // {id, qty, plan, done, at}
     keys: Object.assign({}, DEFAULT_KEYS, store.get('keys', {})),
-    iconUrl: store.get('iconUrl', 'https://wc3.fandom.com/wiki/Special:FilePath/{name}.png'),
+    iconUrl: store.get('iconUrl', 'https://warcraft.wiki.gg/wiki/Special:FilePath/{name}.png'),
     overlay: store.get('overlay', false) || /[?&]overlay=1/.test(location.search),
     saved: store.get('saved', {}),
     timer: store.get('timer', { running: false, base: 0, since: 0 }),   // base ms + (now - since) if running

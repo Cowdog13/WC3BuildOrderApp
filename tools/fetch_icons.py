@@ -13,8 +13,8 @@ import argparse, json, os, re, sys, urllib.error, urllib.parse, urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # {name} = e.g. BTNFootman. Special:FilePath redirects to the real image on any Fandom wiki.
 TEMPLATES = [
+    "https://warcraft.wiki.gg/wiki/Special:FilePath/{name}.png",
     "https://wc3.fandom.com/wiki/Special:FilePath/{name}.png",
-    "https://warcraft.fandom.com/wiki/Special:FilePath/{name}.png",
 ]
 
 def wanted():
@@ -27,7 +27,7 @@ def wanted():
     return names
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
-WIKIS = ["https://wc3.fandom.com", "https://warcraft.fandom.com"]
+WIKIS = ["https://warcraft.wiki.gg"]
 VERBOSE = False
 
 def get(url):
