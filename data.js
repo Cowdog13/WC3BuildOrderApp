@@ -591,6 +591,21 @@ window.WC3_DATA = [
   "img": null
  },
  {
+  "id": "hatw",
+  "name": "Arcane Tower",
+  "race": "human",
+  "kind": "building",
+  "gold": 70,
+  "lumber": 50,
+  "time": 50,
+  "food": 0,
+  "fmade": 0,
+  "icon": "BTNHumanArcaneTower",
+  "upgradeFrom": "hwtw",
+  "btn": "BTNHumanArcaneTower",
+  "img": null
+ },
+ {
   "id": "hbar",
   "name": "Barracks",
   "race": "human",
@@ -631,6 +646,21 @@ window.WC3_DATA = [
   "icon": "BTNCastle",
   "upgradeFrom": "hkee",
   "btn": "BTNCastle",
+  "img": null
+ },
+ {
+  "id": "hctw",
+  "name": "Cannon Tower",
+  "race": "human",
+  "kind": "building",
+  "gold": 120,
+  "lumber": 100,
+  "time": 65,
+  "food": 0,
+  "fmade": 0,
+  "icon": "BTNCannonTower",
+  "upgradeFrom": "hwtw",
+  "btn": "BTNCannonTower",
   "img": null
  },
  {
@@ -687,6 +717,21 @@ window.WC3_DATA = [
   "fmade": 0,
   "icon": "BTNGryphonRider",
   "btn": "BTNGryphonRider",
+  "img": null
+ },
+ {
+  "id": "hgtw",
+  "name": "Guard Tower",
+  "race": "human",
+  "kind": "building",
+  "gold": 70,
+  "lumber": 50,
+  "time": 50,
+  "food": 0,
+  "fmade": 0,
+  "icon": "BTNGuardTower",
+  "upgradeFrom": "hwtw",
+  "btn": "BTNGuardTower",
   "img": null
  },
  {
@@ -1560,6 +1605,36 @@ window.WC3_DATA = [
   "fmade": 0,
   "icon": "BTNTombOfRelics",
   "btn": "BTNTombOfRelics",
+  "img": null
+ },
+ {
+  "id": "uzg1",
+  "name": "Spirit Tower",
+  "race": "undead",
+  "kind": "building",
+  "gold": 145,
+  "lumber": 40,
+  "time": 35,
+  "food": 0,
+  "fmade": 0,
+  "icon": "BTNZigguratUpgrade",
+  "upgradeFrom": "uzig",
+  "btn": "BTNZigguratUpgrade",
+  "img": null
+ },
+ {
+  "id": "uzg2",
+  "name": "Nerubian Tower",
+  "race": "undead",
+  "kind": "building",
+  "gold": 100,
+  "lumber": 20,
+  "time": 30,
+  "food": 0,
+  "fmade": 0,
+  "icon": "BTNFrostTower",
+  "upgradeFrom": "uzig",
+  "btn": "BTNFrostTower",
   "img": null
  },
  {

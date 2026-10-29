@@ -51,6 +51,11 @@ for uid, b in blocks.items():
         researches=lst(b, "Researches"), upgrade=lst(b, "Upgrade"),
         sells=lst(b, "Sellunits"))
 
+# Tower upgrades are abilities in the game data, not "Upgrade" links, so add them by hand.
+for parent, kids in {"hwtw": ["hgtw", "hctw", "hatw"], "uzig": ["uzg1", "uzg2"]}.items():
+    if parent in info:
+        info[parent]["upgrade"] = sorted(set(info[parent]["upgrade"]) | {k for k in kids if k in info})
+
 # transitive closure from the four workers: what a melee player can make
 roots = ["hpea", "opeo", "uaco", "ewsp"]
 seen, todo = set(), list(roots)
