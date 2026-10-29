@@ -13,7 +13,11 @@
   const DEFAULT_KEYS = { toggle: 'F8', next: 'F9', reset: 'Shift+F8', mode: 'F7', click: 'F10' };
 
   const $ = s => document.querySelector(s);
-  function norm(s) { return { id: s.id, qty: Math.max(1, s.qty | 0 || 1), plan: s.plan == null ? null : s.plan, done: !!s.done, at: s.at == null ? null : s.at }; }
+  function norm(s) { return { id: s.id, qty: Math.max(1, s.qty | 0 || 1), plan: s.plan == null ? null : s.plan, job: s.job || '', done: !!s.done, at: s.at == null ? null : s.at }; }
+  const slim = ({ id, qty, plan, job }) => ({ id, qty, plan, job });
+  const WORKERS = new Set(['hpea', 'opeo', 'uaco', 'ewsp']);
+  const JOBS = { gold: 'Gold', lumber: 'Lumber', scout: 'Scout' };
+  const jobText = j => !j ? '' : j.startsWith('b:') ? 'Build ' + (BY_ID[j.slice(2)] ? BY_ID[j.slice(2)].name : j.slice(2)) : (JOBS[j] || j);
   const stepsOf = ids => ids.map(x => typeof x === 'string' ? { id: x } : x).filter(x => BY_ID[x.id]).map(norm);
   const store = {
     get(k, d) { try { const v = localStorage.getItem('wc3bo.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
@@ -173,6 +177,19 @@
       for (const [label, fn, t] of [['−', () => qty(i, -1), 'One fewer'], ['+', () => qty(i, 1), 'One more'], ['↑', () => move(i, -1), 'Move up'], ['↓', () => move(i, 1), 'Move down'], ['✕', () => remove(i), 'Remove']]) {
         const b = Object.assign(document.createElement('button'), { textContent: label, title: t }); b.onclick = fn; btns.appendChild(b);
       }
+      if (WORKERS.has(s.id)) {
+        const jt = Object.assign(document.createElement('span'), { className: 'jobtxt', textContent: s.job ? '→ ' + jobText(s.job) : '' });
+        info.appendChild(jt);
+        const sel = document.createElement('select'); sel.className = 'job'; sel.title = 'Where this worker goes';
+        const opt = (v, t, parent) => { const o = Object.assign(document.createElement('option'), { value: v, textContent: t }); (parent || sel).appendChild(o); };
+        opt('', '→ job…');
+        for (const [v, t] of Object.entries(JOBS)) opt(v, t);
+        const g = Object.assign(document.createElement('optgroup'), { label: 'Build' }); sel.appendChild(g);
+        for (const b of DATA.filter(x => x.race === S.race && x.kind === 'building' && !x.upgradeFrom)) opt('b:' + b.id, b.name, g);
+        sel.value = s.job;
+        sel.onchange = () => { snapshot(); s.job = sel.value; persist(); renderChain(); renderNow(); };
+        info.appendChild(sel);
+      }
       li.append(num, pic, info, btns);
       li.ondblclick = () => { s.done = !s.done; s.at = s.done ? Math.floor(elapsed() / 1000) : null; persist(); renderChain(); renderNow(); };
       li.title = 'Double-click to toggle done';
@@ -190,6 +207,7 @@
     const text = (cls, t) => el.appendChild(Object.assign(document.createElement('span'), { className: cls, textContent: t }));
     text('lbl', 'Now'); el.appendChild(iconEl(d, 'pic')); el.lastChild.style.cssText = 'width:36px;height:36px;border-radius:5px;overflow:hidden';
     text('name', d.name + (S.chain[i].qty > 1 ? ' ×' + S.chain[i].qty : ''));
+    if (S.chain[i].job) text('job', '→ ' + jobText(S.chain[i].job));
     if (n) text('next', '→ next: ' + n.name);
     text('eta', '').id = 'eta';
   }
@@ -247,7 +265,7 @@
     }
   }
   function exportText() {
-    return JSON.stringify({ race: S.race, steps: S.chain.map(({ id, qty, plan }) => ({ id, qty, plan })) });
+    return JSON.stringify({ race: S.race, steps: S.chain.map(slim) });
   }
 
   // ---------- wiring
@@ -264,7 +282,7 @@
   $('#iconUrl').onchange = e => { S.iconUrl = e.target.value.trim(); store.set('iconUrl', S.iconUrl); renderPicker(); renderChain(); renderNow(); };
   $('#btnSave').onclick = () => {
     const name = $('#saveName').value.trim(); if (!name) return;
-    S.saved[name] = { race: S.race, steps: S.chain.map(({ id, qty, plan }) => ({ id, qty, plan })) }; store.set('saved', S.saved); renderSaved();
+    S.saved[name] = { race: S.race, steps: S.chain.map(slim) }; store.set('saved', S.saved); renderSaved();
   };
   $('#btnExport').onclick = async () => { try { await navigator.clipboard.writeText(exportText()); } catch { alert(exportText()); } };
   $('#btnImport').onclick = async () => {
@@ -293,7 +311,7 @@
       const byRid = {}; for (const d of items) if (d.rid) (byRid[d.rid] = byRid[d.rid] || []).push(d);
       const b = W3G.toBuild(r.actions[pl.id], byId, byRid);
       snapshot(); S.race = pl.race; S.chain = stepsOf(b.steps); resetTimer(); persist(); render();
-      S.saved[f.name.replace(/\.w3g$/i, '') + ' – ' + pl.name] = { race: pl.race, steps: S.chain.map(({ id, qty, plan }) => ({ id, qty, plan })) }; store.set('saved', S.saved);
+      S.saved[f.name.replace(/\.w3g$/i, '') + ' – ' + pl.name] = { race: pl.race, steps: S.chain.map(slim) }; store.set('saved', S.saved);
       const unk = Object.keys(b.unknown);
       toast(`Imported ${b.steps.length} steps for ${pl.name} (${RACES[pl.race]}). Hero skills, items and cancelled orders are not included.` +
         (unk.length ? ' Skipped unknown ids: ' + unk.join(', ') + '.' : ''));

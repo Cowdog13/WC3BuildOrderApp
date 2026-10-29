@@ -110,3 +110,9 @@ body.clickthrough .top::after { content: 'click-through'; position: absolute; ri
 .step .meta .plan { display: none; }
 body.overlay .step .meta .plan { display: inline; }
 body.overlay .plan-in { display: none; }
+
+.step select.job { margin-top: 4px; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 2px 4px; font-size: 12px; max-width: 100%; }
+.jobtxt { display: none; color: var(--lumber); font-size: 12px; margin-left: 4px; }
+body.overlay .jobtxt { display: inline; }
+body.overlay select.job { display: none; }
+.now .job { color: var(--lumber); font-weight: 600; }
