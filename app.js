@@ -26,6 +26,7 @@
     q: '',
     chain: store.get('chain', []).filter(s => BY_ID[s.id]).map(norm),   // {id, qty, plan, done, at}
     keys: Object.assign({}, DEFAULT_KEYS, store.get('keys', {})),
+    iconUrl: store.get('iconUrl', 'https://wc3.fandom.com/wiki/Special:FilePath/{name}.png'),
     overlay: store.get('overlay', false) || /[?&]overlay=1/.test(location.search),
     saved: store.get('saved', {}),
     timer: store.get('timer', { running: false, base: 0, since: 0 }),   // base ms + (now - since) if running
@@ -61,7 +62,7 @@
       wrap.appendChild(t);
     };
     // bundled icon, else icons/<BTNName>.png if you drop one in, else a text tile
-    const srcs = [d.img, d.btn && 'icons/' + d.btn + '.png'].filter(Boolean);
+    const srcs = [d.img, d.btn && 'icons/' + d.btn + '.png', d.btn && S.iconUrl && S.iconUrl.replace('{name}', d.btn)].filter(Boolean);
     const tryNext = () => {
       const src = srcs.shift();
       if (!src) return tile();
@@ -246,6 +247,8 @@
   $('#btnResetProgress').onclick = () => { S.chain.forEach(s => { s.done = false; s.at = null; }); persist(); renderChain(); renderNow(); };
   $('#search').oninput = e => { S.q = e.target.value; renderPicker(); };
   $('#btnSettings').onclick = () => { renderHotkeys(); renderSaved(); $('#settings').showModal(); };
+  $('#iconUrl').value = S.iconUrl;
+  $('#iconUrl').onchange = e => { S.iconUrl = e.target.value.trim(); store.set('iconUrl', S.iconUrl); renderPicker(); renderChain(); renderNow(); };
   $('#btnSave').onclick = () => {
     const name = $('#saveName').value.trim(); if (!name) return;
     S.saved[name] = { race: S.race, steps: S.chain.map(({ id, qty, plan }) => ({ id, qty, plan })) }; store.set('saved', S.saved); renderSaved();
