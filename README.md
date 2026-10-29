@@ -19,6 +19,8 @@ Not imported: hero skills, mercenaries/items, cancelled orders, and research ids
 ```
 cd desktop && npm install && npm start
 ```
+On Windows you can just double-click **Start Overlay.bat** (it installs Electron on the first run). The ✕ on the overlay quits it; start it again the same way.
+Builds saved in a normal browser and in the overlay window are stored separately - move one across with Settings -> *Copy as text/JSON* and *Import from clipboard*.
 Run Warcraft III in **Windowed / Borderless** mode (an overlay cannot draw over exclusive fullscreen).
 Hotkeys (global, rebindable in Settings): F8 start/pause, ` (backtick) step done, Shift+F8 reset, F7 overlay/full view,
 F10 click-through. The overlay starts small, see-through and docked on the right edge with click-through on, so your

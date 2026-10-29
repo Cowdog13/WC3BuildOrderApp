@@ -278,14 +278,20 @@
   }
 
   // ---------- saved builds
+  function renderLoadSel() {
+    const sel = $('#loadSel'); sel.length = 1;
+    for (const name of Object.keys(S.saved)) sel.add(new Option(name, name));
+  }
+  function loadSaved(name) { const b = S.saved[name]; if (!b) return; snapshot(); S.race = b.race; S.chain = stepsOf(b.steps || b.ids); resetTimer(); persist(); render(); }
   function renderSaved() {
+    renderLoadSel();
     const ul = $('#saved'); ul.textContent = '';
     for (const name of Object.keys(S.saved)) {
       const li = document.createElement('li');
       const sb = S.saved[name], n = (sb.steps || sb.ids).length;
       li.appendChild(Object.assign(document.createElement('span'), { textContent: `${name} (${RACES[sb.race]}, ${n} steps)` }));
       const load = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Load' });
-      load.onclick = () => { const b = S.saved[name]; snapshot(); S.race = b.race; S.chain = stepsOf(b.steps || b.ids); persist(); render(); };
+      load.onclick = () => { loadSaved(name); $('#settings').close(); };
       const del = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Delete' });
       del.onclick = () => { delete S.saved[name]; store.set('saved', S.saved); renderSaved(); };
       const r = document.createElement('span'); r.append(load, ' ', del);
@@ -297,10 +303,11 @@
   }
 
   // ---------- wiring
-  function render() { renderTabs(); renderPicker(); renderChain(); renderNow(); renderTimer(); }
+  function render() { renderLoadSel(); renderTabs(); renderPicker(); renderChain(); renderNow(); renderTimer(); }
   $('#btnStart').onclick = toggleTimer;
   $('#btnReset').onclick = () => { if (!S.timer.base && !S.timer.running || confirm('Reset the timer?')) resetTimer(); };
   $('#btnNext').onclick = nextStep;
+  $('#loadSel').onchange = e => { const n = e.target.value; e.target.value = ''; if (n && (!S.chain.length || confirm('Replace the current build order with "' + n + '"?'))) loadSaved(n); };
   $('#btnUndo').onclick = () => { const h = history.pop(); if (h) { S.chain = JSON.parse(h); persist(); renderChain(); renderNow(); } };
   $('#btnClear').onclick = () => { if (S.chain.length && confirm('Clear the build order?')) { snapshot(); S.chain = []; persist(); renderChain(); renderNow(); } };
   $('#btnResetProgress').onclick = () => { S.chain.forEach(s => { s.done = false; s.at = null; }); persist(); renderChain(); renderNow(); };
