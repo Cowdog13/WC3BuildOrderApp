@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WC3 Build Order Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="timer-box">
+    <div id="clock" class="clock">0:00</div>
+    <div class="timer-btns">
+      <button id="btnStart" class="primary">Start</button>
+      <button id="btnReset">Reset</button>
+    </div>
+  </div>
+  <div class="now" id="now"></div>
+  <div class="top-right">
+    <button id="btnNext" class="primary">Step done</button>
+    <button id="btnSettings" title="Hotkeys &amp; saved builds">&#9881; Settings</button>
+  </div>
+</header>
+
+<main>
+  <section class="picker">
+    <div class="tabs" id="raceTabs"></div>
+    <div class="tabs small" id="kindTabs"></div>
+    <input id="search" type="search" placeholder="Search&hellip;" autocomplete="off">
+    <div id="grid" class="grid"></div>
+    <p class="hint">Click to add to your build. Costs and times are Warcraft III data; research values are approximate &mdash; edit <code>data.js</code> to tune them.</p>
+  </section>
+
+  <section class="chain">
+    <div class="chain-head">
+      <h2>Build order</h2>
+      <div class="chain-actions">
+        <button id="btnUndo">Undo</button>
+        <button id="btnClear">Clear</button>
+        <button id="btnResetProgress" title="Un-tick all steps">Reset progress</button>
+      </div>
+    </div>
+    <ol id="chainList" class="chain-list"></ol>
+    <div id="totals" class="totals"></div>
+  </section>
+</main>
+
+<dialog id="settings">
+  <form method="dialog">
+    <h3>Hotkeys</h3>
+    <p class="hint">Click a button, then press the key (e.g. <kbd>F8</kbd> or <kbd>Shift+F9</kbd>). Hotkeys only fire while this page has focus.</p>
+    <div id="hotkeyRows"></div>
+    <h3>Saved builds</h3>
+    <div class="save-row">
+      <input id="saveName" placeholder="Build name">
+      <button type="button" id="btnSave">Save current</button>
+    </div>
+    <ul id="saved" class="saved"></ul>
+    <div class="save-row">
+      <button type="button" id="btnExport">Copy as text/JSON</button>
+      <button type="button" id="btnImport">Import from clipboard</button>
+    </div>
+    <menu><button value="close" class="primary">Close</button></menu>
+  </form>
+</dialog>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
