@@ -4,9 +4,9 @@
 1. Extract the icon folder from the game with a CASC viewer (e.g. CascView / CASCExplorer):
        ReplaceableTextures\\CommandButtons      (BTNFootman.blp, BTNPeasant.blp, ...)
    Research icons live there too (and in ReplaceableTextures\\CommandButtons\\... for upgrades).
-2. Run:
+2. Run (folder or .zip):
        pip install pillow
-       python tools/import_game_icons.py  path\\to\\extracted\\CommandButtons
+       python tools/import_game_icons.py  path\\to\\icons.zip
    Files are written to icons/<BTNName>.png (only the ones the app wants, unless --all)."""
 import json, os, re, sys
 
@@ -17,6 +17,19 @@ def wanted():
     data = json.loads(re.search(r"window\.WC3_DATA = (.*);\s*$", src, re.S).group(1))
     return {e["btn"].lower() for e in data if e.get("btn")}
 
+def candidates(args):
+    """Yield (stem, opener) for every image under a folder or inside a .zip."""
+    import io, zipfile
+    for path in args:
+        if zipfile.is_zipfile(path):
+            z = zipfile.ZipFile(path)
+            for n in z.namelist():
+                yield os.path.splitext(os.path.basename(n)), (lambda n=n, z=z: io.BytesIO(z.read(n)))
+        else:
+            for dirpath, _, files in os.walk(path):
+                for f in files:
+                    yield os.path.splitext(f), (lambda p=os.path.join(dirpath, f): p)
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if not args: sys.exit(__doc__)
@@ -26,19 +39,25 @@ def main():
         sys.exit("Run first:  pip install pillow")
     want = None if "--all" in sys.argv else wanted()
     os.makedirs(os.path.join(ROOT, "icons"), exist_ok=True)
-    done = skipped = 0
-    for dirpath, _, files in os.walk(args[0]):
-        for f in files:
-            stem, ext = os.path.splitext(f)
-            if ext.lower() not in (".blp", ".dds", ".tga", ".png") or not stem.upper().startswith("BTN"): continue
-            if want is not None and stem.lower() not in want: skipped += 1; continue
-            try:
-                im = Image.open(os.path.join(dirpath, f)).convert("RGBA")
-                im.save(os.path.join(ROOT, "icons", stem + ".png"))
-                done += 1
-            except Exception as e:
-                print("could not convert", f, "->", e)
-    print("converted %d icons (%d files ignored as not needed)" % (done, skipped))
+    done, skipped, got = 0, 0, set()
+    names = {}                      # canonical BTN name (as in data.js) by lowercase
+    if want is not None:
+        src = open(os.path.join(ROOT, "data.js"), encoding="utf-8").read()
+        for m in re.finditer(r'"btn": "(BTN[^"]+)"', src): names[m.group(1).lower()] = m.group(1)
+    for (stem, ext), opener in candidates(args):
+        if ext.lower() not in (".blp", ".dds", ".tga", ".png", ".jpg", ".webp"): continue
+        key = stem.lower() if stem.lower().startswith("btn") else "btn" + stem.lower()
+        if want is not None and key not in want: skipped += 1; continue
+        out = names.get(key) or (stem if stem.upper().startswith("BTN") else "BTN" + stem)
+        try:
+            Image.open(opener()).convert("RGBA").save(os.path.join(ROOT, "icons", out + ".png"))
+            done += 1; got.add(key)
+        except Exception as e:
+            print("could not convert", stem + ext, "->", e)
+    print("converted %d icons (%d other files ignored)" % (done, skipped))
+    if want is not None:
+        missing = sorted(names[k] for k in want if k not in got)
+        if missing: print("still missing %d: %s" % (len(missing), ", ".join(missing)))
 
 if __name__ == "__main__":
     main()
