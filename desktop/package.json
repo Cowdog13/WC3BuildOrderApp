@@ -1,0 +1,8 @@
+{
+  "name": "wc3-build-order-overlay",
+  "version": "0.1.0",
+  "description": "Always-on-top overlay wrapper for the WC3 build order tracker",
+  "main": "main.js",
+  "scripts": { "start": "electron ." },
+  "devDependencies": { "electron": "^33.0.0" }
+}

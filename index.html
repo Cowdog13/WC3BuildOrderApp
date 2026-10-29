@@ -18,7 +18,9 @@
   <div class="now" id="now"></div>
   <div class="top-right">
     <button id="btnNext" class="primary">Step done</button>
+    <button id="btnOverlay" title="Compact overlay view">Overlay</button>
     <button id="btnSettings" title="Hotkeys &amp; saved builds">&#9881; Settings</button>
+    <span class="winbtns"><button id="btnMin" title="Minimize">&#8211;</button><button id="btnClose" title="Quit">&#10005;</button></span>
   </div>
 </header>
 
@@ -35,6 +37,8 @@
     <div class="chain-head">
       <h2>Build order</h2>
       <div class="chain-actions">
+        <button id="btnImportReplay" title="Load a Warcraft III replay (.w3g) and turn a player's build into steps">Import replay</button>
+        <input id="replayFile" type="file" accept=".w3g" hidden>
         <button id="btnUndo">Undo</button>
         <button id="btnClear">Clear</button>
         <button id="btnResetProgress" title="Un-tick all steps">Reset progress</button>
@@ -44,6 +48,8 @@
     <div id="totals" class="totals"></div>
   </section>
 </main>
+
+<div id="toast" class="toast" hidden></div>
 
 <dialog id="settings">
   <form method="dialog">
@@ -65,6 +71,7 @@
 </dialog>
 
 <script src="data.js"></script>
+<script src="replay.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

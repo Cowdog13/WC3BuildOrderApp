@@ -18,30 +18,69 @@ def key(s): return re.sub(r"[^a-z0-9]", "", s.lower())
 avail = {}
 for sub in ("orc", "neutral", "common"):
     d = os.path.join(pkg, sub)
+    race_of = "orc" if sub == "orc" else None
     if not os.path.isdir(d): continue
     for f in sorted(os.listdir(d)):
         k, ext = os.path.splitext(f)
         if ext not in (".png", ".gif", ".jpg"): continue
-        if k not in avail or (ext == ".png" and not avail[k].endswith(".png")):
-            avail[k] = os.path.join(d, f)
+        if (race_of, k) not in avail or (ext == ".png" and not avail[(race_of, k)].endswith(".png")):
+            avail[(race_of, k)] = os.path.join(d, f)
 
 # unit/building names whose package file name differs from the stripped name
 ALIAS = {"burrow": "orcburrow", "windrider": "wyvernrider", "raider": "wolfrider",
          "taurenchieftain": "chieftain", "warmill": "warmill", "beastiary": "beastiary"}
 
 # id of units the extractor cannot find art for
-ICON_FIX = {"Edem": "BTNHeroDemonHunter", "Udea": "BTNHeroDeathKnight",
-            "Ulic": "BTNHeroLich", "hdhw": "BTNDragonHawk"}
-EXTRA = [  # missing from the data dump but trainable in melee
-    dict(id="ospw", name="Spirit Walker", race="orc", gold=195, lumber=35, time=30, food=2,
-         kind="unit", icon="BTNSpiritWalker", by="osld"),
-    dict(id="hdhw", name="Dragonhawk Rider", race="human", gold=200, lumber=50, time=45, food=4,
-         kind="unit", icon="BTNDragonHawk", by="hgra"),
-]
+ICON_FIX = {"Edem": "BTNHeroDemonHunter", "Udea": "BTNHeroDeathKnight", "Ulic": "BTNHeroLich",
+            "hdhw": "BTNDragonHawk", "hmpr": "BTNPriest", "hsor": "BTNSorceress",
+            "ospm": "BTNSpiritWalker", "ugol": "BTNHauntedMine"}
+EXTRA = []
+
+# Replay research ids ("rid"). Leveled upgrades share one id; entries are matched to levels by order.
+# Verified against a real replay: Rhra Rhla Rhpt Rhri Rhar (+ Human units/buildings). The rest are from
+# memory of the object data - if the replay importer reports "unknown research XXXX", fix it here.
+RID = {
+    "Iron Forged Swords": "Rhme", "Steel Forged Swords": "Rhme", "Mithril Forged Swords": "Rhme",
+    "Black Gunpowder": "Rhra", "Refined Gunpowder": "Rhra", "Imbued Gunpowder": "Rhra",
+    "Iron Plating": "Rhar", "Steel Plating": "Rhar", "Mithril Plating": "Rhar",
+    "Studded Leather Armor": "Rhla", "Reinforced Leather Armor": "Rhla", "Dragonhide Armor": "Rhla",
+    "Improved Lumber Harvesting": "Rhlh", "Advanced Lumber Harvesting": "Rhlh",
+    "Masonry": "Rhac", "Advanced Masonry": "Rhac", "Imbued Masonry": "Rhac",
+    "Long Rifles": "Rhri", "Defend": "Rhde", "Animal War Training": "Rhan",
+    "Priest Adept Training": "Rhpt", "Priest Master Training": "Rhpt",
+    "Sorceress Adept Training": "Rhst", "Sorceress Master Training": "Rhst",
+    "Magic Sentry": "Rhse", "Control Magic": "Rhss", "Fragmentation Shards": "Rhfs",
+    "Flak Cannons": "Rhfc", "Flying Machine Bombs": "Rhgb", "Flare": "Rhfl", "Barrage": "Rhrt",
+    "Storm Hammers": "Rhhb", "Cloud": "Rhcd", "human:Backpack": "Rhpm",
+    "Steel Melee Weapons": "Rome", "Thorium Melee Weapons": "Rome", "Arcanite Melee Weapons": "Rome",
+    "Steel Ranged Weapons": "Rora", "Thorium Ranged Weapons": "Rora", "Arcanite Ranged Weapons": "Rora",
+    "Steel Armor": "Roar", "Thorium Armor": "Roar", "Arcanite Armor": "Roar",
+    "Reinforced Defenses": "Rorb", "Spiked Barricades": "Rosp", "Improved Spiked Barricades": "Rosp",
+    "Berserker Strength": "Robs", "Troll Regeneration": "Rotr", "Pillage": "Ropg", "Backpack": "Ropm",
+    "Ensnare": "Roen", "Liquid Fire": "Rolf", "Burning Oil": "Robf",
+    "Unholy Strength": "Rume", "Unholy Strength II": "Rume", "Unholy Strength III": "Rume",
+    "Creature Attack": "Rura", "Creature Attack II": "Rura", "Creature Attack III": "Rura",
+    "Unholy Armor": "Ruar", "Unholy Armor II": "Ruar", "Unholy Armor III": "Ruar",
+    "Creature Carapace": "Rucr", "Creature Carapace II": "Rucr", "Creature Carapace III": "Rucr",
+    "Ghoul Frenzy": "Rugf", "Cannibalize": "Ruac", "Stone Form": "Rusf", "Burrow": "Rubu", "Web": "Ruwb",
+    "Necromancer Adept Training": "Rune", "Necromancer Master Training": "Rune",
+    "Banshee Adept Training": "Ruba", "Banshee Master Training": "Ruba",
+    "Strength of the Moon": "Resm", "Improved Strength of the Moon": "Resm", "Advanced Strength of the Moon": "Resm",
+    "Strength of the Wild": "Resw", "Improved Strength of the Wild": "Resw", "Advanced Strength of the Wild": "Resw",
+    "Moon Armor": "Rema", "Improved Moon Armor": "Rema", "Advanced Moon Armor": "Rema",
+    "Hide Armor": "Rerh", "Improved Hide Armor": "Rerh", "Advanced Hide Armor": "Rerh",
+    "Marksmanship": "Remk", "Improved Bows": "Reib", "Sentinel": "Resc", "Moon Glaive": "Remg",
+    "Ultravision": "Reuv", "Nature's Blessing": "Renb",
+    "Druid of the Talon Adept Training": "Redt", "Druid of the Talon Master Training": "Redt",
+    "Druid of the Claw Adept Training": "Redc", "Druid of the Claw Master Training": "Redc",
+}
 
 def research(race, by, name, gold, lumber, time, icon=None):
-    return dict(id="r_%s_%s" % (by, key(name)), name=name, race=race, gold=gold, lumber=lumber,
-                time=time, food=0, kind="research", icon=icon, by=by)
+    e = dict(id="r_%s_%s" % (by, key(name)), name=name, race=race, gold=gold, lumber=lumber,
+             time=time, food=0, kind="research", icon=icon, by=by)
+    rid = RID.get(race + ":" + name) or RID.get(name)
+    if rid: e["rid"] = rid
+    return e
 
 W = [(100, 50, 60), (175, 175, 75), (250, 300, 90)]   # weapon levels
 A = [(125, 75, 60), (200, 175, 75), (275, 300, 90)]   # armor levels
@@ -76,9 +115,11 @@ RESEARCH += [
     research("human", "harm", "Fragmentation Shards", 100, 50, 30),
     research("human", "harm", "Flak Cannons", 100, 50, 30),
     research("human", "harm", "Flying Machine Bombs", 100, 50, 30),
-    research("human", "hgra", "Breath of Fire", 100, 100, 40),
     research("human", "hgra", "Storm Hammers", 150, 150, 40),
-    research("human", "hvlt", "Control Magic", 100, 100, 40),
+    research("human", "hars", "Control Magic", 100, 100, 40),
+    research("human", "harm", "Flare", 50, 50, 30),
+    research("human", "harm", "Barrage", 100, 100, 40),
+    research("human", "htow", "Backpack", 100, 50, 30),
 ]
 # ---------------- Orc  (icon = file name in the w3-icons package)
 RESEARCH += levels("orc", "ofor", ["Steel Melee Weapons", "Thorium Melee Weapons", "Arcanite Melee Weapons"], W,
@@ -153,6 +194,22 @@ RESEARCH += [
     research("nightelf", "edos", "Corrosive Breath", 100, 100, 50),
 ]
 
+# In-game icon file names (BTN*.blp) for research; best guesses - the icon fetcher reports misses.
+ICON_BTN = {
+    "Iron Forged Swords": "BTNSteelMelee", "Steel Forged Swords": "BTNThoriumMelee", "Mithril Forged Swords": "BTNArcaniteMelee",
+    "Black Gunpowder": "BTNHumanMissileUpOne", "Refined Gunpowder": "BTNHumanMissileUpTwo", "Imbued Gunpowder": "BTNHumanMissileUpThree",
+    "Iron Plating": "BTNHumanArmorUpOne", "Steel Plating": "BTNHumanArmorUpTwo", "Mithril Plating": "BTNHumanArmorUpThree",
+    "Studded Leather Armor": "BTNLeatherUpgradeOne", "Reinforced Leather Armor": "BTNLeatherUpgradeTwo", "Dragonhide Armor": "BTNLeatherUpgradeThree",
+    "Improved Lumber Harvesting": "BTNImprovedLumberHarvesting", "Advanced Lumber Harvesting": "BTNAdvancedLumberHarvesting",
+    "Masonry": "BTNMasonry", "Advanced Masonry": "BTNAdvancedMasonry", "Imbued Masonry": "BTNImbuedMasonry",
+    "Long Rifles": "BTNLongRifles", "Defend": "BTNDefend", "Animal War Training": "BTNAnimalWarTraining",
+    "Priest Adept Training": "BTNPriestAdept", "Priest Master Training": "BTNPriestMaster",
+    "Sorceress Adept Training": "BTNSorceressAdept", "Sorceress Master Training": "BTNSorceressMaster",
+    "Magic Sentry": "BTNMagicalSentry", "Control Magic": "BTNControlMagic", "Fragmentation Shards": "BTNFragmentationBombs",
+    "Flak Cannons": "BTNFlakCannons", "Flying Machine Bombs": "BTNFlyingMachineBombs", "Flare": "BTNFlare", "Barrage": "BTNBarrage",
+    "Storm Hammers": "BTNStormHammer", "Cloud": "BTNCloud", "human:Backpack": "BTNPackBeast",
+}
+
 out, seen = [], set()
 by_id = {u["id"]: u for u in units}
 upgrade_parent = {}
@@ -180,8 +237,10 @@ for r in RESEARCH: out.append(r)
 os.makedirs(os.path.join(ROOT, "icons"), exist_ok=True)
 have = 0
 for e in out:
+    b = e["icon"] if (e["icon"] or "").startswith("BTN") else (ICON_BTN.get(e["race"] + ":" + e["name"]) or ICON_BTN.get(e["name"]))
+    e["btn"] = b
     cands = [e["icon"]] if e["kind"] == "research" else [key(e["name"]), ALIAS.get(key(e["name"]), "")]
-    path = next((avail[c] for c in cands if c and c in avail), None)
+    path = next((avail[(r, c)] for c in cands for r in (e["race"], None) if c and (r, c) in avail), None)
     if path:
         ext = os.path.splitext(path)[1]
         dst = "icons/%s%s" % (e["id"], ext)

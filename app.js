@@ -7,10 +7,14 @@
   const KINDS = { building: 'Buildings', unit: 'Units', hero: 'Heroes', research: 'Research' };
   const START = { human: 'htow', orc: 'ogre', undead: 'unpl', nightelf: 'etol' };   // starting town hall
   const START_WORKERS = 5;
-  const HOTKEY_LABELS = { toggle: 'Start / pause timer', next: 'Step done (stamp time)', reset: 'Reset timer' };
-  const DEFAULT_KEYS = { toggle: 'F8', next: 'F9', reset: 'Shift+F8' };
+  const DESKTOP = !!window.desktop;
+  const HOTKEY_LABELS = { toggle: 'Start / pause timer', next: 'Step done (stamp time)', reset: 'Reset timer', mode: 'Overlay / full view',
+    ...(DESKTOP ? { click: 'Click-through on/off (overlay)' } : {}) };
+  const DEFAULT_KEYS = { toggle: 'F8', next: 'F9', reset: 'Shift+F8', mode: 'F7', click: 'F10' };
 
   const $ = s => document.querySelector(s);
+  function norm(s) { return { id: s.id, qty: Math.max(1, s.qty | 0 || 1), plan: s.plan == null ? null : s.plan, done: !!s.done, at: s.at == null ? null : s.at }; }
+  const stepsOf = ids => ids.map(x => typeof x === 'string' ? { id: x } : x).filter(x => BY_ID[x.id]).map(norm);
   const store = {
     get(k, d) { try { const v = localStorage.getItem('wc3bo.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) { try { localStorage.setItem('wc3bo.' + k, JSON.stringify(v)); } catch { /* storage unavailable */ } },
@@ -20,8 +24,9 @@
     race: store.get('race', 'human'),
     kind: store.get('kind', 'building'),
     q: '',
-    chain: store.get('chain', []).filter(s => BY_ID[s.id]),      // {id, done, at}
+    chain: store.get('chain', []).filter(s => BY_ID[s.id]).map(norm),   // {id, qty, plan, done, at}
     keys: Object.assign({}, DEFAULT_KEYS, store.get('keys', {})),
+    overlay: store.get('overlay', false) || /[?&]overlay=1/.test(location.search),
     saved: store.get('saved', {}),
     timer: store.get('timer', { running: false, base: 0, since: 0 }),   // base ms + (now - since) if running
   };
@@ -56,7 +61,7 @@
       wrap.appendChild(t);
     };
     // bundled icon, else icons/<BTNName>.png if you drop one in, else a text tile
-    const srcs = [d.img, d.icon && 'icons/' + d.icon + '.png'].filter(Boolean);
+    const srcs = [d.img, d.btn && 'icons/' + d.btn + '.png'].filter(Boolean);
     const tryNext = () => {
       const src = srcs.shift();
       if (!src) return tile();
@@ -109,12 +114,18 @@
 
   // ---------- chain
   function snapshot() { history.push(JSON.stringify(S.chain)); if (history.length > 50) history.shift(); }
-  function add(id) { snapshot(); S.chain.push({ id, done: false, at: null }); persist(); renderChain(); renderNow(); const l = $('#chainList'); l.scrollTop = l.scrollHeight; }
+  function add(id) {
+    snapshot();
+    const last = S.chain[S.chain.length - 1], d = BY_ID[id];
+    if (last && last.id === id && !last.done && d.kind !== 'building' && d.kind !== 'research') last.qty++;
+    else S.chain.push(norm({ id }));
+    persist(); renderChain(); renderNow(); const l = $('#chainList'); l.scrollTop = l.scrollHeight; }
   function remove(i) { snapshot(); S.chain.splice(i, 1); persist(); renderChain(); renderNow(); }
   function move(i, dir) {
     const j = i + dir; if (j < 0 || j >= S.chain.length) return;
     snapshot(); [S.chain[i], S.chain[j]] = [S.chain[j], S.chain[i]]; persist(); renderChain();
   }
+  function qty(i, n) { snapshot(); const s = S.chain[i]; s.qty = Math.max(1, s.qty + n); persist(); renderChain(); }
   const currentIndex = () => S.chain.findIndex(s => !s.done);
   function nextStep() {
     const i = currentIndex(); if (i < 0) return;
@@ -123,28 +134,30 @@
   }
   function supplyCap(upTo) {      // food cap after the first `upTo` steps (steps that give food count immediately)
     let cap = BY_ID[START[S.race]].fmade, used = START_WORKERS;
-    for (let k = 0; k < upTo; k++) { const d = BY_ID[S.chain[k].id]; cap += d.fmade || 0; used += d.food || 0; }
+    for (let k = 0; k < upTo; k++) { const d = BY_ID[S.chain[k].id], q = S.chain[k].qty; cap += (d.fmade || 0) * q; used += (d.food || 0) * q; }
     return [used, Math.min(cap, 100)];
   }
   function renderChain() {
     const ol = $('#chainList'); ol.textContent = '';
     const cur = currentIndex();
+    const firstShown = S.overlay ? Math.max(0, (cur < 0 ? S.chain.length : cur) - 1) : 0;
     let gold = 0, lumber = 0;
     if (!S.chain.length) ol.innerHTML = '<li class="empty">Click buildings, units and research on the left to build your order.</li>';
     S.chain.forEach((s, i) => {
-      const d = BY_ID[s.id]; gold += d.gold; lumber += d.lumber;
+      const d = BY_ID[s.id]; gold += d.gold * s.qty; lumber += d.lumber * s.qty;
       const [used, cap] = supplyCap(i + 1);
+      if (i < firstShown) return;
       const li = document.createElement('li');
       li.className = 'step' + (i === cur ? ' current' : '') + (s.done ? ' done' : '');
       const num = Object.assign(document.createElement('div'), { className: 'num', textContent: i + 1 });
       const pic = iconEl(d, 'pic');
       const info = document.createElement('div');
-      info.innerHTML = `<div class="sname"></div><div class="meta"><span class="g">${d.gold}g</span> <span class="l">${d.lumber}l</span> · ${d.time}s · total <span class="g">${gold}</span>/<span class="l">${lumber}</span> · <span class="${used > cap ? 'over' : ''}">supply ${used}/${cap}</span></div>`;
-      info.firstChild.textContent = d.name;
+      info.innerHTML = `<div class="sname"></div><div class="meta"><span class="g">${d.gold * s.qty}g</span> <span class="l">${d.lumber * s.qty}l</span> · ${d.time}s${s.plan != null ? ' · <span class="plan">replay @' + fmt(s.plan * 1000) + '</span>' : ''} <span class="tot">· total <span class="g">${gold}</span>/<span class="l">${lumber}</span> · <span class="${used > cap ? 'over' : ''}">supply ${used}/${cap}</span></span></div>`;
+      info.firstChild.textContent = d.name + (s.qty > 1 ? ' ×' + s.qty : '');
       const btns = document.createElement('div'); btns.className = 'btns';
       const stamp = Object.assign(document.createElement('span'), { className: 'stamp', textContent: s.at == null ? '' : fmt(s.at * 1000) });
       btns.appendChild(stamp);
-      for (const [label, fn, t] of [['↑', () => move(i, -1), 'Move up'], ['↓', () => move(i, 1), 'Move down'], ['✕', () => remove(i), 'Remove']]) {
+      for (const [label, fn, t] of [['−', () => qty(i, -1), 'One fewer'], ['+', () => qty(i, 1), 'One more'], ['↑', () => move(i, -1), 'Move up'], ['↓', () => move(i, 1), 'Move down'], ['✕', () => remove(i), 'Remove']]) {
         const b = Object.assign(document.createElement('button'), { textContent: label, title: t }); b.onclick = fn; btns.appendChild(b);
       }
       li.append(num, pic, info, btns);
@@ -163,7 +176,7 @@
     el.textContent = '';
     const text = (cls, t) => el.appendChild(Object.assign(document.createElement('span'), { className: cls, textContent: t }));
     text('lbl', 'Now'); el.appendChild(iconEl(d, 'pic')); el.lastChild.style.cssText = 'width:36px;height:36px;border-radius:5px;overflow:hidden';
-    text('name', d.name);
+    text('name', d.name + (S.chain[i].qty > 1 ? ' ×' + S.chain[i].qty : ''));
     if (n) text('next', '→ next: ' + n.name);
   }
 
@@ -173,13 +186,19 @@
     const k = e.key.length === 1 ? e.key.toUpperCase() : e.key;
     return [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', k === ' ' ? 'Space' : k].filter(Boolean).join('+');
   }
-  const ACTIONS = { toggle: toggleTimer, next: nextStep, reset: resetTimer };
+  function setOverlay(on) {
+    S.overlay = on; store.set('overlay', on);
+    document.body.classList.toggle('overlay', on);
+    if (DESKTOP) window.desktop.setMode(on ? 'overlay' : 'full');
+    renderChain();
+  }
+  const ACTIONS = { toggle: toggleTimer, next: nextStep, reset: resetTimer, mode: () => setOverlay(!S.overlay), click: () => {} };
   let rebinding = null;
   document.addEventListener('keydown', e => {
     const c = combo(e); if (!c) return;
     if (rebinding) {
       e.preventDefault();
-      if (c !== 'Escape') { S.keys[rebinding.action] = c; store.set('keys', S.keys); }
+      if (c !== 'Escape') { S.keys[rebinding.action] = c; store.set('keys', S.keys); if (DESKTOP) window.desktop.setKeys(S.keys); }
       rebinding = null; renderHotkeys(); return;
     }
     if (e.target.matches('input, textarea') && c.length === 1) return;     // typing
@@ -203,9 +222,10 @@
     const ul = $('#saved'); ul.textContent = '';
     for (const name of Object.keys(S.saved)) {
       const li = document.createElement('li');
-      li.appendChild(Object.assign(document.createElement('span'), { textContent: `${name} (${RACES[S.saved[name].race]}, ${S.saved[name].ids.length} steps)` }));
+      const sb = S.saved[name], n = (sb.steps || sb.ids).length;
+      li.appendChild(Object.assign(document.createElement('span'), { textContent: `${name} (${RACES[sb.race]}, ${n} steps)` }));
       const load = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Load' });
-      load.onclick = () => { const b = S.saved[name]; snapshot(); S.race = b.race; S.chain = b.ids.filter(id => BY_ID[id]).map(id => ({ id, done: false, at: null })); persist(); render(); };
+      load.onclick = () => { const b = S.saved[name]; snapshot(); S.race = b.race; S.chain = stepsOf(b.steps || b.ids); persist(); render(); };
       const del = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Delete' });
       del.onclick = () => { delete S.saved[name]; store.set('saved', S.saved); renderSaved(); };
       const r = document.createElement('span'); r.append(load, ' ', del);
@@ -213,7 +233,7 @@
     }
   }
   function exportText() {
-    return JSON.stringify({ race: S.race, ids: S.chain.map(s => s.id) });
+    return JSON.stringify({ race: S.race, steps: S.chain.map(({ id, qty, plan }) => ({ id, qty, plan })) });
   }
 
   // ---------- wiring
@@ -228,14 +248,51 @@
   $('#btnSettings').onclick = () => { renderHotkeys(); renderSaved(); $('#settings').showModal(); };
   $('#btnSave').onclick = () => {
     const name = $('#saveName').value.trim(); if (!name) return;
-    S.saved[name] = { race: S.race, ids: S.chain.map(s => s.id) }; store.set('saved', S.saved); renderSaved();
+    S.saved[name] = { race: S.race, steps: S.chain.map(({ id, qty, plan }) => ({ id, qty, plan })) }; store.set('saved', S.saved); renderSaved();
   };
   $('#btnExport').onclick = async () => { try { await navigator.clipboard.writeText(exportText()); } catch { prompt('Copy this:', exportText()); } };
   $('#btnImport').onclick = async () => {
     let t; try { t = await navigator.clipboard.readText(); } catch { t = prompt('Paste build JSON:'); }
-    try { const b = JSON.parse(t); if (!RACES[b.race] || !Array.isArray(b.ids)) throw 0; snapshot(); S.race = b.race; S.chain = b.ids.filter(id => BY_ID[id]).map(id => ({ id, done: false, at: null })); persist(); render(); }
+    try { const b = JSON.parse(t); const list = b.steps || b.ids; if (!RACES[b.race] || !Array.isArray(list)) throw 0; snapshot(); S.race = b.race; S.chain = stepsOf(list); persist(); render(); }
     catch { alert('That does not look like an exported build.'); }
   };
+  // ---------- replay import
+  const BY_RID = {};
+  for (const d of DATA) if (d.rid) (BY_RID[d.rid] = BY_RID[d.rid] || []).push(d);
+  const toast = msg => { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => { t.hidden = true; }, 12000); };
+  $('#btnImportReplay').onclick = () => $('#replayFile').click();
+  $('#replayFile').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try {
+      const r = await W3G.parseReplay(await f.arrayBuffer());
+      const humans = r.players.filter(p => !p.computer && RACES[p.race] && r.actions[p.id]);
+      if (!humans.length) throw new Error('No player with a known race and commands found in this replay.');
+      let pl = humans[0];
+      if (humans.length > 1) {
+        const pick = prompt('Which player?\n' + humans.map((p, i) => `${i + 1}: ${p.name} (${RACES[p.race]})`).join('\n'), '1');
+        pl = humans[(parseInt(pick, 10) || 1) - 1] || humans[0];
+      }
+      if (S.chain.length && !confirm('Replace the current build order with ' + pl.name + "'s build from the replay?")) return;
+      const items = DATA.filter(d => d.race === pl.race), byId = Object.fromEntries(items.map(d => [d.id, d]));
+      const byRid = {}; for (const d of items) if (d.rid) (byRid[d.rid] = byRid[d.rid] || []).push(d);
+      const b = W3G.toBuild(r.actions[pl.id], byId, byRid);
+      snapshot(); S.race = pl.race; S.chain = stepsOf(b.steps); resetTimer(); persist(); render();
+      const unk = Object.keys(b.unknown);
+      toast(`Imported ${b.steps.length} steps for ${pl.name} (${RACES[pl.race]}). Hero skills, items and cancelled orders are not included.` +
+        (unk.length ? ' Skipped unknown ids: ' + unk.join(', ') + '.' : ''));
+    } catch (err) { alert('Could not read that replay: ' + err.message); }
+  };
+  $('#btnOverlay').onclick = () => setOverlay(!S.overlay);
+  if (DESKTOP) {
+    document.body.classList.add('desktop');
+    window.desktop.setKeys(S.keys);
+    window.desktop.onHotkey(a => ACTIONS[a] && ACTIONS[a]());
+    window.desktop.onClickThrough(on => document.body.classList.toggle('clickthrough', on));
+    $('#btnMin').onclick = () => window.desktop.win('minimize');
+    $('#btnClose').onclick = () => window.desktop.win('close');
+  }
   setInterval(renderTimer, 100);
   render();
+  setOverlay(S.overlay);
 })();

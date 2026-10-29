@@ -60,7 +60,7 @@ while todo:
     seen.add(u)
     d = info[u]
     todo += d["trains"] + d["builds"] + d["upgrade"]
-out = [info[u] for u in sorted(seen) if info[u]["name"] and info[u]["icon"]]
+out = [info[u] for u in sorted(seen) if info[u]["name"]]
 for d in out:
     d["kind"] = ("building" if d["isbldg"] else
                  "hero" if d["id"][0].isupper() else "unit")

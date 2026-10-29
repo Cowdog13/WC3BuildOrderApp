@@ -70,3 +70,35 @@ dialog h3 { margin: 12px 0 6px; }
 .saved { list-style: none; padding: 0; margin: 6px 0; }
 .saved li { display: flex; justify-content: space-between; padding: 3px 0; gap: 6px; }
 menu { padding: 0; margin: 12px 0 0; text-align: right; }
+
+.plan { color: #9db4ff; }
+.toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--panel2); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 16px; max-width: 90vw; z-index: 20; }
+.step { grid-template-columns: 22px 44px 1fr auto; }
+.item > div { width: 100%; height: 100%; }
+
+/* desktop (Electron) shell: draggable header, window buttons */
+.winbtns { display: none; gap: 4px; }
+body.desktop .winbtns { display: flex; }
+body.desktop .top { -webkit-app-region: drag; }
+body.desktop .top button, body.desktop .top input { -webkit-app-region: no-drag; }
+body.desktop:not(.overlay) { background: var(--bg); }
+body.desktop { background: transparent; }
+
+/* compact overlay: timer + upcoming steps only, translucent so the game shows through */
+body.overlay { background: transparent; }
+body.overlay .top { background: rgba(20,22,27,.82); padding: 6px 10px; gap: 8px; position: static; border-radius: 10px 10px 0 0; }
+body.overlay .clock { font-size: 30px; min-width: 90px; }
+body.overlay .timer-btns, body.overlay #btnSettings, body.overlay .now .next, body.overlay .now .lbl { display: none; }
+body.overlay .now { flex-basis: 100%; min-width: 0; order: 3; }
+body.overlay .now .name { font-size: 15px; }
+body.overlay main { display: block; padding: 0; }
+body.overlay .picker, body.overlay .chain-head, body.overlay .totals { display: none; }
+body.overlay .chain { background: rgba(20,22,27,.72); border: 0; border-radius: 0 0 10px 10px; padding: 6px; }
+body.overlay .chain-list { max-height: none; gap: 4px; }
+body.overlay .step { grid-template-columns: 16px 32px 1fr; padding: 3px 6px; background: rgba(38,42,53,.8); }
+body.overlay .step .pic { width: 32px; height: 32px; }
+body.overlay .step .btns, body.overlay .step .tot { display: none; }
+body.overlay .step .btns .stamp { display: none; }
+body.overlay .step .meta { font-size: 11px; }
+body.overlay .toast { display: none; }
+body.clickthrough .top::after { content: 'click-through'; position: absolute; right: 8px; bottom: -14px; font-size: 10px; color: var(--accent); }
