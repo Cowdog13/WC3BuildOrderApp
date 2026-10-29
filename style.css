@@ -128,3 +128,22 @@ body.overlay select.job { display: none; }
 .step.drop-before { box-shadow: 0 -3px 0 0 var(--accent); }
 .step.drop-after { box-shadow: 0 3px 0 0 var(--accent); }
 .item { cursor: pointer; }
+
+/* see-through compact overlay docked at the side of the game */
+:root { --ov-alpha: .6; }
+body.overlay .top { background: rgba(20,22,27,var(--ov-alpha)); padding: 4px 8px; gap: 6px; }
+body.overlay .chain { background: rgba(20,22,27,calc(var(--ov-alpha) * .8)); padding: 4px; }
+body.overlay .step { background: rgba(38,42,53,calc(var(--ov-alpha) * .9)); grid-template-columns: 14px 28px 1fr; gap: 6px; padding: 2px 5px; }
+body.overlay .step .pic { width: 28px; height: 28px; }
+body.overlay .step .sname { font-size: 13px; }
+body.overlay .step .meta { font-size: 10px; }
+body.overlay .clock { font-size: 26px; min-width: 70px; }
+body.overlay #btnOverlay { padding: 2px 8px; font-size: 12px; }
+body.overlay #btnNext { padding: 2px 8px; font-size: 12px; }
+body.overlay .now .name { font-size: 14px; }
+body.overlay .now .eta { font-size: 12px; }
+body.overlay .now .pic { width: 28px !important; height: 28px !important; }
+body.overlay .top { flex-wrap: wrap; }
+body.overlay .top-right { margin-left: auto; }
+body.overlay .step.current { box-shadow: 0 0 0 1px var(--accent) inset; }
+.jobtxt:empty { display: none !important; }

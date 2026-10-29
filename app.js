@@ -12,7 +12,7 @@
   const DESKTOP = !!window.desktop;
   const HOTKEY_LABELS = { toggle: 'Start / pause timer', next: 'Step done (stamp time)', reset: 'Reset timer', mode: 'Overlay / full view',
     ...(DESKTOP ? { click: 'Click-through on/off (overlay)' } : {}) };
-  const DEFAULT_KEYS = { toggle: 'F8', next: 'F9', reset: 'Shift+F8', mode: 'F7', click: 'F10' };
+  const DEFAULT_KEYS = { toggle: 'F8', next: '`', reset: 'Shift+F8', mode: 'F7', click: 'F10' };
 
   const $ = s => document.querySelector(s);
   function norm(s) { return { id: s.id, qty: Math.max(1, s.qty | 0 || 1), plan: s.plan == null ? null : s.plan, job: s.job || '', done: !!s.done, at: s.at == null ? null : s.at, note: s.note || '' }; }
@@ -33,9 +33,10 @@
     kind: store.get('kind', 'building'),
     q: '',
     chain: store.get('chain', []).filter(s => BY_ID[s.id]).map(norm),   // {id, qty, plan, done, at}
-    keys: Object.assign({}, DEFAULT_KEYS, store.get('keys', {})),
+    keys: Object.assign({}, DEFAULT_KEYS, (k => { if (k.next === 'F9') delete k.next; return k; })(store.get('keys', {}))),   // F9 was the old default
     iconUrl: store.get('iconUrl', 'https://warcraft.wiki.gg/wiki/Special:FilePath/{name}.png'),
-    overlay: store.get('overlay', false) || /[?&]overlay=1/.test(location.search),
+    overlay: store.get('overlay', DESKTOP) || /[?&]overlay=1/.test(location.search),
+    opacity: store.get('opacity', 60),
     saved: store.get('saved', {}),
     timer: store.get('timer', { running: false, base: 0, since: 0 }),   // base ms + (now - since) if running
   };
@@ -185,7 +186,7 @@
     S.chain.forEach((s, i) => {
       const d = BY_ID[s.id]; gold += d.gold * s.qty; lumber += d.lumber * s.qty;
       const [used, cap] = supplyCap(i + 1);
-      if (i < firstShown) return;
+      if (i < firstShown || (S.overlay && i >= firstShown + 7)) return;
       const li = document.createElement('li');
       li.dataset.i = i;
       li.className = 'step' + (i === cur ? ' current' : '') + (s.done ? ' done' : '');
@@ -244,6 +245,7 @@
     const k = e.key.length === 1 ? e.key.toUpperCase() : e.key;
     return [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', k === ' ' ? 'Space' : k].filter(Boolean).join('+');
   }
+  function applyOpacity() { document.documentElement.style.setProperty('--ov-alpha', S.opacity / 100); }
   function setOverlay(on) {
     S.overlay = on; store.set('overlay', on);
     document.body.classList.toggle('overlay', on);
@@ -376,6 +378,8 @@
         (unk.length ? ' Skipped unknown ids: ' + unk.join(', ') + '.' : ''));
     } catch (err) { alert('Could not read that replay: ' + err.message); }
   };
+  $('#opacity').value = S.opacity; applyOpacity();
+  $('#opacity').oninput = e => { S.opacity = +e.target.value; store.set('opacity', S.opacity); applyOpacity(); };
   $('#btnOverlay').onclick = () => setOverlay(!S.overlay);
   if (DESKTOP) {
     document.body.classList.add('desktop');
